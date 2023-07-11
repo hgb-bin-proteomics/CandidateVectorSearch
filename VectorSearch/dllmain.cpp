@@ -60,18 +60,15 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
     m->reserve(Eigen::VectorXi::Constant(cILength, APPROX_NNZ_PER_ROW));
 
-    auto* norm = new Eigen::Vector<float, Eigen::Dynamic>(cILength);
-
     int currentRow = 0;
     for (int i = 0; i < cILength; ++i) {
-        int nrValues = 0;
         int startIter = candidatesIdx[i];
         int endIter = i + 1 == cILength ? cVLength : candidatesIdx[i + 1];
+        int nrNonZero = endIter - startIter;
+        float val = 1.0 / nrNonZero;
         for (int j = startIter; j < endIter; ++j) {
-            m->insert(currentRow, candidatesValues[j]) = 1.0;
-            ++nrValues;
+            m->insert(currentRow, candidatesValues[j]) = val;
         }
-        norm->coeffRef(currentRow) = 1.0/nrValues;
         ++currentRow;
     }
 
@@ -101,23 +98,18 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
         auto* spmv = new Eigen::Vector<float, Eigen::Dynamic>(cILength);
         *spmv = Eigen::Product(*m, *v);
 
-        auto* normspmv = new Eigen::Vector<float, Eigen::Dynamic>(cILength);
-        *normspmv = spmv->cwiseProduct(*norm);
-
         for (int j = 0; j < n; ++j) {
             Eigen::Index max_idx;
-            float max = normspmv->maxCoeff(&max_idx);
+            float max = spmv->maxCoeff(&max_idx);
             //result.push_back((int) max_idx);
             result[i * n + j] = (int) max_idx;
-            normspmv->coeffRef(max_idx) = 0.0;
+            spmv->coeffRef(max_idx) = 0.0;
         }
 
-        delete normspmv;
         delete spmv;
         delete v;
     }
 
-    delete norm;
     delete m;
 
     //return result.data();
