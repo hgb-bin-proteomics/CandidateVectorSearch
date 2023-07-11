@@ -16,9 +16,6 @@ const int MASS_RANGE = 1300;
 const int MASS_MULTIPLIER = 100;
 const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
 const int APPROX_NNZ_PER_ROW = 100;
-const int MAX_SPECTRA = 100000;
-const int MAX_TOP_N = 100;
-const int RESULT_ARRAY_SIZE = MAX_SPECTRA * MAX_TOP_N;
 const double ONE_OVER_SQRT_PI = 0.39894228040143267793994605993438;
 
 extern "C" {
@@ -50,13 +47,6 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
                        int cVLength, int cILength, int sVLength, int sILength,
                        int n, float tolerance) {
 
-    if (sILength >= MAX_SPECTRA) {
-        throw std::invalid_argument("Provided more spectra than allowed.");
-    }
-    if (n >= MAX_TOP_N) {
-        throw std::invalid_argument("Retrieving more hits per spectrum than allowed.");
-    }
-
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
     m->reserve(Eigen::VectorXi::Constant(cILength, APPROX_NNZ_PER_ROW));
 
@@ -76,7 +66,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
 
     //auto result = new std::vector<int>;
     //result.reserve(sILength * n);
-    auto* result = new int[RESULT_ARRAY_SIZE];
+    auto* result = new int[sILength * n];
     auto t = round(tolerance * MASS_MULTIPLIER);
 
     for (int i = 0; i < sILength; ++i) {
