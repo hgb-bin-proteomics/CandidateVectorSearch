@@ -23,7 +23,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             var nrCandidates = 5000000;
             var nrSpectra = 100;
             var topN = 20;
-            var r = new Random();
+            var seed = 1337;
+            var r = new Random(seed);
 
             //
             if (args.Length > 0)
