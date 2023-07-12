@@ -141,7 +141,7 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, float* csrValues,
 
             for (int k = minPeak; k <= maxPeak; ++k) {
                 float currentVal = V[k];
-                float newVal = normpdf((float)k, (float)currentPeak, (float)t / 3);
+                float newVal = normpdf((float) k, (float) currentPeak, (float) t / 3);
                 V[k] = max(currentVal, newVal);
             }
         }
