@@ -5,6 +5,10 @@
 #include <Eigen/Sparse>
 #include <iostream>
 
+const int versionMajor = 1;
+const int versionMinor = 0;
+const int versionFix = 0;
+
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
 #define EXPORT __declspec(dllexport)
@@ -46,6 +50,8 @@ float normpdf(float, float, float);
 int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraValues, int* spectraIdx, 
                        int cVLength, int cILength, int sVLength, int sILength,
                        int n, float tolerance) {
+
+    std::cout << "Running Eigen vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
     m->reserve(Eigen::VectorXi::Constant(cILength, APPROX_NNZ_PER_ROW));
@@ -138,8 +144,11 @@ float squared(float x) {
 /// <param name="x">The value for which the PDF should be calculated.</param>
 /// <param name="mu">The mu of the normal distribution.</param>
 /// <param name="sigma">The sigma of the normal distribution.</param>
-/// <returns>The PDF at x for the normal distribution given by mu and sigma</returns>
+/// <returns>The PDF at x for the normal distribution given by mu and sigma. If sigma = 0 it returns 1.</returns>
 float normpdf(float x, float mu, float sigma) {
+    if (sigma == 0.0) {
+        return 1.0;
+    }
     return (ONE_OVER_SQRT_PI / sigma) * exp(-0.5 * squared((x - mu) / sigma));
 }
 

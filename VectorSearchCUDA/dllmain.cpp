@@ -8,6 +8,10 @@
 #include <numeric>
 #include <algorithm>
 
+const int versionMajor = 1;
+const int versionMinor = 0;
+const int versionFix = 0;
+
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
 #define EXPORT __declspec(dllexport)
@@ -77,6 +81,8 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, float* csrValues,
                            int csrRowoffsetsLength, int csrNNZ,
                            int sVLength, int sILength,
                            int n, float tolerance) {
+
+    std::cout << "Running CUDA vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
     int t = round(tolerance * MASS_MULTIPLIER);
     int* result = new int[sILength * n];
@@ -214,8 +220,11 @@ float squared(float x) {
 /// <param name="x">The value for which the PDF should be calculated.</param>
 /// <param name="mu">The mu of the normal distribution.</param>
 /// <param name="sigma">The sigma of the normal distribution.</param>
-/// <returns>The PDF at x for the normal distribution given by mu and sigma</returns>
+/// <returns>The PDF at x for the normal distribution given by mu and sigma. If sigma = 0 it returns 1.</returns>
 float normpdf(float x, float mu, float sigma) {
+    if (sigma == 0.0) {
+        return 1.0;
+    }
     return (ONE_OVER_SQRT_PI / sigma) * exp(-0.5 * squared((x - mu) / sigma));
 }
 
