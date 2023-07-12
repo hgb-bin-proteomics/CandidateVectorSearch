@@ -48,10 +48,15 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 var status = Eigen(nrCandidates, nrSpectra, topN, r);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
-            else
+            else if (mode == "Compare")
             {
                 var status = Compare(nrCandidates, nrSpectra, topN, r);
                 Console.WriteLine($"Compare routine exited with status: {status}");
+            }
+            else
+            {
+                var status = DeterministicCompare();
+                Console.WriteLine($"Deterministic compare routine exited with status: {status}");
             }
            
             Console.WriteLine("Done!");
