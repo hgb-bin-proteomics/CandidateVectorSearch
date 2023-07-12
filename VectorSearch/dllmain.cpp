@@ -96,11 +96,17 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
             spmv->coeffRef(max_idx) = 0.0;
         }
 
+        spmv->resize(0);
+        v->resize(0);
         delete spmv;
         delete v;
+        spmv = NULL;
+        v = NULL;
     }
 
+    m->resize(0, 0);
     delete m;
+    m = NULL;
 
     //return result.data();
     return result;
