@@ -6,7 +6,7 @@
 #include <iostream>
 
 const int versionMajor = 1;
-const int versionMinor = 0;
+const int versionMinor = 1;
 const int versionFix = 0;
 
 #define METHOD_EXPORTS
