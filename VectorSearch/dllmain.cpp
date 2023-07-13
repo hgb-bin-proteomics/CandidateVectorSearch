@@ -5,6 +5,10 @@
 #include <Eigen/Sparse>
 #include <iostream>
 
+const int versionMajor = 1;
+const int versionMinor = 1;
+const int versionFix = 0;
+
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
 #define EXPORT __declspec(dllexport)
@@ -16,9 +20,6 @@ const int MASS_RANGE = 1300;
 const int MASS_MULTIPLIER = 100;
 const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
 const int APPROX_NNZ_PER_ROW = 100;
-const int MAX_SPECTRA = 100000;
-const int MAX_TOP_N = 100;
-const int RESULT_ARRAY_SIZE = MAX_SPECTRA * MAX_TOP_N;
 const double ONE_OVER_SQRT_PI = 0.39894228040143267793994605993438;
 
 extern "C" {
@@ -50,28 +51,20 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
                        int cVLength, int cILength, int sVLength, int sILength,
                        int n, float tolerance) {
 
-    if (sILength >= MAX_SPECTRA) {
-        throw std::invalid_argument("Provided more spectra than allowed.");
-    }
-    if (n >= MAX_TOP_N) {
-        throw std::invalid_argument("Retrieving more hits per spectrum than allowed.");
-    }
+    std::cout << "Running Eigen vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
     m->reserve(Eigen::VectorXi::Constant(cILength, APPROX_NNZ_PER_ROW));
 
-    auto* norm = new Eigen::Vector<float, Eigen::Dynamic>(cILength);
-
     int currentRow = 0;
     for (int i = 0; i < cILength; ++i) {
-        int nrValues = 0;
         int startIter = candidatesIdx[i];
         int endIter = i + 1 == cILength ? cVLength : candidatesIdx[i + 1];
+        int nrNonZero = endIter - startIter;
+        float val = 1.0 / nrNonZero;
         for (int j = startIter; j < endIter; ++j) {
-            m->insert(currentRow, candidatesValues[j]) = 1.0;
-            ++nrValues;
+            m->insert(currentRow, candidatesValues[j]) = val;
         }
-        norm->coeffRef(currentRow) = 1.0/nrValues;
         ++currentRow;
     }
 
@@ -79,7 +72,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
 
     //auto result = new std::vector<int>;
     //result.reserve(sILength * n);
-    auto* result = new int[RESULT_ARRAY_SIZE];
+    auto* result = new int[sILength * n];
     auto t = round(tolerance * MASS_MULTIPLIER);
 
     for (int i = 0; i < sILength; ++i) {
@@ -101,24 +94,25 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
         auto* spmv = new Eigen::Vector<float, Eigen::Dynamic>(cILength);
         *spmv = Eigen::Product(*m, *v);
 
-        auto* normspmv = new Eigen::Vector<float, Eigen::Dynamic>(cILength);
-        *normspmv = spmv->cwiseProduct(*norm);
-
         for (int j = 0; j < n; ++j) {
             Eigen::Index max_idx;
-            float max = normspmv->maxCoeff(&max_idx);
+            float max = spmv->maxCoeff(&max_idx);
             //result.push_back((int) max_idx);
             result[i * n + j] = (int) max_idx;
-            normspmv->coeffRef(max_idx) = 0.0;
+            spmv->coeffRef(max_idx) = 0.0;
         }
 
-        delete normspmv;
+        spmv->resize(0);
+        v->resize(0);
         delete spmv;
         delete v;
+        spmv = NULL;
+        v = NULL;
     }
 
-    delete norm;
+    m->resize(0, 0);
     delete m;
+    m = NULL;
 
     //return result.data();
     return result;
@@ -150,8 +144,11 @@ float squared(float x) {
 /// <param name="x">The value for which the PDF should be calculated.</param>
 /// <param name="mu">The mu of the normal distribution.</param>
 /// <param name="sigma">The sigma of the normal distribution.</param>
-/// <returns>The PDF at x for the normal distribution given by mu and sigma</returns>
+/// <returns>The PDF at x for the normal distribution given by mu and sigma. If sigma = 0 it returns 1.</returns>
 float normpdf(float x, float mu, float sigma) {
+    if (sigma == 0.0) {
+        return 1.0;
+    }
     return (ONE_OVER_SQRT_PI / sigma) * exp(-0.5 * squared((x - mu) / sigma));
 }
 
