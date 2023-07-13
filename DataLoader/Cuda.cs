@@ -5,9 +5,9 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
 {
     public partial class DataLoader
     {
-        const string dllCuda = "VectorSearchCuda.dll";
+        const string dllCuda = @"VectorSearchCuda.dll";
         [DllImport(dllCuda, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr findTopCandidatesCuda(IntPtr cR, IntPtr cI, IntPtr cV,
+        private static extern IntPtr findTopCandidatesCuda(IntPtr cR, IntPtr cI,
                                                            IntPtr sV, IntPtr sI,
                                                            int cRL, int cNNZ,
                                                            int sVL, int sIL,
@@ -21,9 +21,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             // generate candidate vectors
             var csrRowoffsets = new int[nrCandidates + 1];
             var csrIdx = new int[nrCandidates * 100];
-            var csrValues = new float[nrCandidates * 100];
             var currentIdx = 0;
-            for (int i = 0; i < csrValues.Length; i += 100)
+            for (int i = 0; i < csrIdx.Length; i += 100)
             {
                 csrRowoffsets[currentIdx] = i;
                 var tmpIdx = new int[100];
@@ -40,7 +39,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 for (int j = 0; j < tmpIdx.Length; j++)
                 {
                     csrIdx[i + j] = tmpIdx[j];
-                    csrValues[i + j] = (float) (1.0 / 100.0); // this needs to be changed for the actual NNZ per row
                 }
                 currentIdx++;
                 if (currentIdx % 5000 == 0)
@@ -82,7 +80,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             // get pointer addresses and call c++ function
             var csrRowoffsetsLoc = GCHandle.Alloc(csrRowoffsets, GCHandleType.Pinned);
             var csrIdxLoc = GCHandle.Alloc(csrIdx, GCHandleType.Pinned);
-            var csrValuesLoc = GCHandle.Alloc(csrValues, GCHandleType.Pinned);
             var sValuesLoc = GCHandle.Alloc(spectraValues, GCHandleType.Pinned);
             var sIdxLoc = GCHandle.Alloc(spectraIdx, GCHandleType.Pinned);
             var resultArray = new int[spectraIdx.Length * topN];
@@ -91,13 +88,12 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             {
                 IntPtr csrRowoffsetsPtr = csrRowoffsetsLoc.AddrOfPinnedObject();
                 IntPtr csrIdxPtr = csrIdxLoc.AddrOfPinnedObject();
-                IntPtr csrValuesPtr = csrValuesLoc.AddrOfPinnedObject();
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
-                IntPtr result = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr, csrValuesPtr, 
+                IntPtr result = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr, 
                                                       sValuesPtr, sIdxPtr,
-                                                      csrRowoffsets.Length, csrValues.Length, 
+                                                      csrRowoffsets.Length, csrIdx.Length, 
                                                       spectraValues.Length, spectraIdx.Length,
                                                       topN, (float) 0.02);
 
@@ -114,7 +110,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             {
                 if (csrRowoffsetsLoc.IsAllocated) { csrRowoffsetsLoc.Free(); }
                 if (csrIdxLoc.IsAllocated) { csrIdxLoc.Free(); }
-                if (csrValuesLoc.IsAllocated) { csrValuesLoc.Free(); }
                 if (sValuesLoc.IsAllocated) { sValuesLoc.Free(); }
                 if (sIdxLoc.IsAllocated) { sIdxLoc.Free(); }
             }

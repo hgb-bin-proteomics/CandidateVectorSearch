@@ -5,7 +5,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
 {
     public partial class DataLoader
     {
-        const string dll = "VectorSearch.dll";
+        const string dll = @"VectorSearch.dll";
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr findTopCandidates(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
                                                        int cVL, int cIL, int sVL, int sIL,

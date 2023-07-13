@@ -55,8 +55,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             }
             else
             {
-                var status = DeterministicCompare();
-                Console.WriteLine($"Deterministic compare routine exited with status: {status}");
+                Console.WriteLine("No mode selected, has to be one of: Eigen, Cuda, Compare.");
             }
            
             Console.WriteLine("Done!");

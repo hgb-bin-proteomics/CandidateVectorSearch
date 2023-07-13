@@ -12,7 +12,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             var candidatesIdx = new int[nrCandidates];
             var csrRowoffsets = new int[nrCandidates + 1];
             var csrIdx = new int[nrCandidates * 100];
-            var csrValues = new float[nrCandidates * 100];
             var currentIdx = 0;
             for (int i = 0; i < candidateValues.Length; i += 100)
             {
@@ -33,7 +32,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 {
                     candidateValues[i + j] = tmpValues[j];
                     csrIdx[i + j] = tmpValues[j];
-                    csrValues[i + j] = (float)(1.0 / 100.0); // this needs to be changed for the actual NNZ per row
                 }
                 currentIdx++;
                 if (currentIdx % 5000 == 0)
@@ -77,7 +75,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             var cIdxLoc = GCHandle.Alloc(candidatesIdx, GCHandleType.Pinned);
             var csrRowoffsetsLoc = GCHandle.Alloc(csrRowoffsets, GCHandleType.Pinned);
             var csrIdxLoc = GCHandle.Alloc(csrIdx, GCHandleType.Pinned);
-            var csrValuesLoc = GCHandle.Alloc(csrValues, GCHandleType.Pinned);
             var sValuesLoc = GCHandle.Alloc(spectraValues, GCHandleType.Pinned);
             var sIdxLoc = GCHandle.Alloc(spectraIdx, GCHandleType.Pinned);
             var resultArrayEigen = new int[spectraIdx.Length * topN];
@@ -89,7 +86,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 IntPtr cIdxPtr = cIdxLoc.AddrOfPinnedObject();
                 IntPtr csrRowoffsetsPtr = csrRowoffsetsLoc.AddrOfPinnedObject();
                 IntPtr csrIdxPtr = csrIdxLoc.AddrOfPinnedObject();
-                IntPtr csrValuesPtr = csrValuesLoc.AddrOfPinnedObject();
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
@@ -101,9 +97,9 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
 
                 memStat = releaseMemory(resultEigen);
 
-                IntPtr resultCuda = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr, csrValuesPtr,
+                IntPtr resultCuda = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr,
                                                           sValuesPtr, sIdxPtr,
-                                                          csrRowoffsets.Length, csrValues.Length,
+                                                          csrRowoffsets.Length, csrIdx.Length,
                                                           spectraValues.Length, spectraIdx.Length,
                                                           topN, (float) 0.02);
 
@@ -122,7 +118,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 if (cIdxLoc.IsAllocated) { cIdxLoc.Free(); }
                 if (csrRowoffsetsLoc.IsAllocated) { csrRowoffsetsLoc.Free(); }
                 if (csrIdxLoc.IsAllocated) { csrIdxLoc.Free(); }
-                if (csrValuesLoc.IsAllocated) { csrValuesLoc.Free(); }
                 if (sValuesLoc.IsAllocated) { sValuesLoc.Free(); }
                 if (sIdxLoc.IsAllocated) { sIdxLoc.Free(); }
             }
