@@ -9,7 +9,7 @@
 #include <algorithm>
 
 const int versionMajor = 1;
-const int versionMinor = 0;
+const int versionMinor = 1;
 const int versionFix = 0;
 
 #define METHOD_EXPORTS
@@ -25,7 +25,7 @@ const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
 const double ONE_OVER_SQRT_PI = 0.39894228040143267793994605993438;
 
 extern "C" {
-    EXPORT int* findTopCandidatesCuda(int*, int*, float*, 
+    EXPORT int* findTopCandidatesCuda(int*, int*, 
                                       int*, int*,
                                       int, int, 
                                       int, int,
@@ -65,7 +65,6 @@ int CHECK_CUSPARSE(cusparseStatus_t status)
 /// </summary>
 /// <param name="csrRowoffsets">Rowoffsets (int array) of the CSR sparse matrix (L: rows + 1).</param>
 /// <param name="csrColIdx">Column indices (int array) of the CSR sparse matrix (L: NNZ).</param>
-/// <param name="csrValues">Values (float array) of the CSR sparse matrix (L: NNZ).</param>
 /// <param name="spectraValues">An integer array of peaks from experimental spectra flattened.</param>
 /// <param name="spectraIdx">An integer array that contains indices of where each spectrum starts in spectraValues.</param>
 /// <param name="csrRowoffsetsLength">Length (int) of csrRowoffsets (rows + 1).</param>
@@ -75,7 +74,7 @@ int CHECK_CUSPARSE(cusparseStatus_t status)
 /// <param name="n">How many of the best hits should be returned (int).</param>
 /// <param name="tolerance">Tolerance for peak matching (float).</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
-int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, float* csrValues, 
+int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, 
                            int* spectraValues, int* spectraIdx,
                            int csrRowoffsetsLength, int csrNNZ,
                            int sVLength, int sILength,
@@ -85,7 +84,19 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, float* csrValues,
 
     int t = round(tolerance * MASS_MULTIPLIER);
     int* result = new int[sILength * n];
+    float* csrValues = new float[csrNNZ];
     float* MVresult = new float[csrRowoffsetsLength - 1] {0.0};
+
+    // create csrValues
+    for (int i = 0; i < csrRowoffsetsLength - 1; ++i) {
+        int startIter = csrRowoffsets[i];
+        int endIter = csrRowoffsets[i + 1];
+        int nrNonZero = endIter - startIter;
+        float val = 1.0 / nrNonZero;
+        for (int j = startIter; j < endIter; ++j) {
+            csrValues[j] = val;
+        }
+    }
 
     // cusparse spmv variables
     float alpha = 1.0;
@@ -122,7 +133,7 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, float* csrValues,
     CHECK_CUSPARSE(cusparseCreateCsr(&mat, csrRowoffsetsLength - 1, ENCODING_SIZE, csrNNZ,
                                      dM_csrRowoffsets, dM_csrColIdx, dM_csrValues,
                                      CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
-                                     CUSPARSE_INDEX_BASE_ONE, CUDA_R_32F));
+                                     CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F));
     CHECK_CUSPARSE(cusparseCreateDnVec(&res, csrRowoffsetsLength - 1, dMVresult, CUDA_R_32F));
 
     // device iterative spmv
@@ -189,6 +200,7 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, float* csrValues,
 
     // host memory deallocation
     delete[] MVresult;
+    delete[] csrValues;
 
     return result;
 }
