@@ -7,8 +7,10 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
     {
         const string dll = @"VectorSearch.dll";
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr findTopCandidates(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
-                                                       int cVL, int cIL, int sVL, int sIL,
+        private static extern IntPtr findTopCandidates(IntPtr cV, IntPtr cI, 
+                                                       IntPtr sV, IntPtr sI,
+                                                       int cVL, int cIL, 
+                                                       int sVL, int sIL,
                                                        int n, float tolerance);
 
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
@@ -87,9 +89,11 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
-                IntPtr result = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
-                                                  candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                  topN, (float)0.02);
+                IntPtr result = findTopCandidates(cValuesPtr, cIdxPtr, 
+                                                  sValuesPtr, sIdxPtr,
+                                                  candidateValues.Length, candidatesIdx.Length, 
+                                                  spectraValues.Length, spectraIdx.Length,
+                                                  topN, (float) 0.02);
 
                 Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
 
