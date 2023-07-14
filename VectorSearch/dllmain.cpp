@@ -6,7 +6,7 @@
 #include <iostream>
 
 const int versionMajor = 1;
-const int versionMinor = 1;
+const int versionMinor = 2;
 const int versionFix = 0;
 
 #define METHOD_EXPORTS
@@ -23,8 +23,10 @@ const int APPROX_NNZ_PER_ROW = 100;
 const double ONE_OVER_SQRT_PI = 0.39894228040143267793994605993438;
 
 extern "C" {
-    EXPORT int* findTopCandidates(int*, int*, int*, int*, 
-                                  int, int, int, int, 
+    EXPORT int* findTopCandidates(int*, int*, 
+                                  int*, int*, 
+                                  int, int, 
+                                  int, int, 
                                   int, float);
 
     EXPORT int releaseMemory(int*);
@@ -47,8 +49,10 @@ float normpdf(float, float, float);
 /// <param name="n">How many of the best hits should be returned (int).</param>
 /// <param name="tolerance">Tolerance for peak matching (float).</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
-int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraValues, int* spectraIdx, 
-                       int cVLength, int cILength, int sVLength, int sILength,
+int* findTopCandidates(int* candidatesValues, int* candidatesIdx, 
+                       int* spectraValues, int* spectraIdx, 
+                       int cVLength, int cILength, 
+                       int sVLength, int sILength,
                        int n, float tolerance) {
 
     std::cout << "Running Eigen vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
@@ -79,6 +83,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx, int* spectraVa
         int startIter = spectraIdx[i];
         int endIter = i + 1 == sILength ? sVLength : spectraIdx[i + 1];
         auto* v = new Eigen::SparseVector<float, Eigen::ColMajor>(ENCODING_SIZE);
+        v->reserve(APPROX_NNZ_PER_ROW);
         for (int j = startIter; j < endIter; ++j) {
             auto currentPeak = spectraValues[j];
             auto minPeak = currentPeak - t > 0 ? currentPeak - t : 0;
