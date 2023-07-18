@@ -14,7 +14,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             // parameter defaults
             var mode = "Eigen";
             var nrCandidates = 5000000;
-            var nrSpectra = 100;
+            var nrSpectra = 199;
             var topN = 20;
             var seed = 1337;
             var r = new Random(seed);
@@ -45,7 +45,12 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             }
             else if (mode == "Eigen")
             {
-                var status = Eigen(nrCandidates, nrSpectra, topN, r);
+                var status = Eigen(nrCandidates, nrSpectra, topN, r, false);
+                Console.WriteLine($"Eigen routine exited with status: {status}");
+            }
+            else if (mode == "EigenB")
+            {
+                var status = Eigen(nrCandidates, nrSpectra, topN, r, true);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
             else if (mode == "Compare")

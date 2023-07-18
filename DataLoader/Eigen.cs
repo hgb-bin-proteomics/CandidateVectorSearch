@@ -14,9 +14,17 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                        int n, float tolerance);
 
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidatesBatched(IntPtr cV, IntPtr cI,
+                                                              IntPtr sV, IntPtr sI,
+                                                              int cVL, int cIL,
+                                                              int sVL, int sIL,
+                                                              int n, float tolerance,
+                                                              int batchSize);
+
+        [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemory(IntPtr result);
 
-        public static int Eigen(int nrCandidates, int nrSpectra, int topN, Random r)
+        public static int Eigen(int nrCandidates, int nrSpectra, int topN, Random r, bool batched)
         {
             // generate candidate vectors
             var candidateValues = new int[nrCandidates * 100];
@@ -89,15 +97,31 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
-                IntPtr result = findTopCandidates(cValuesPtr, cIdxPtr, 
-                                                  sValuesPtr, sIdxPtr,
-                                                  candidateValues.Length, candidatesIdx.Length, 
-                                                  spectraValues.Length, spectraIdx.Length,
-                                                  topN, (float) 0.02);
+                if (!batched)
+                {
+                    IntPtr result = findTopCandidates(cValuesPtr, cIdxPtr,
+                                                      sValuesPtr, sIdxPtr,
+                                                      candidateValues.Length, candidatesIdx.Length,
+                                                      spectraValues.Length, spectraIdx.Length,
+                                                      topN, (float) 0.02);
 
-                Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+                    Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
 
-                memStat = releaseMemory(result);
+                    memStat = releaseMemory(result);
+                }
+                else
+                {
+                    IntPtr result = findTopCandidatesBatched(cValuesPtr, cIdxPtr,
+                                                             sValuesPtr, sIdxPtr,
+                                                             candidateValues.Length, candidatesIdx.Length,
+                                                             spectraValues.Length, spectraIdx.Length,
+                                                             topN, (float) 0.02,
+                                                             100);
+
+                    Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+
+                    memStat = releaseMemory(result);
+                }
             }
             catch (Exception ex)
             {
