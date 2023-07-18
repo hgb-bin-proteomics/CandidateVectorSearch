@@ -60,7 +60,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             }
             else
             {
-                Console.WriteLine("No mode selected, has to be one of: Eigen, Cuda, Compare.");
+                Console.WriteLine("No mode selected, has to be one of: Eigen, EigenB, Cuda, Compare.");
             }
            
             Console.WriteLine("Done!");
