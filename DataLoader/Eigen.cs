@@ -145,7 +145,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             }
 
             Console.WriteLine($"MemStat: {memStat}");
-            Console.WriteLine("Time for candidate search (SpMV):");
+            var mode = batched ? "(SpMM)" : "(SpMV)";
+            Console.WriteLine($"Time for candidate search {mode}:");
             Console.WriteLine(sw.Elapsed.TotalSeconds.ToString());
 
             //

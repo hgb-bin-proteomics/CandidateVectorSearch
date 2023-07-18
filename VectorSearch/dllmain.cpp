@@ -7,7 +7,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 3;
-const int versionFix = 1;
+const int versionFix = 2;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -98,7 +98,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
 
             for (int k = minPeak; k <= maxPeak; ++k) {
                 float currentVal = v->coeffRef(k);
-                float newVal = normpdf((float) k, (float) currentPeak, (float) t / 3);
+                float newVal = normpdf((float) k, (float) currentPeak, (float) (t / 3.0));
                 v->coeffRef(k) = max(currentVal, newVal);
             }
         }
@@ -198,7 +198,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
 
                 for (int k = minPeak; k <= maxPeak; ++k) {
                     float currentVal = v[k];
-                    float newVal = normpdf((float)k, (float)currentPeak, (float)t / 3);
+                    float newVal = normpdf((float) k, (float) currentPeak, (float) (t / 3.0));
                     v[k] = max(currentVal, newVal);
                 }
             }
@@ -226,7 +226,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
                 Eigen::Index max_idx;
                 float max = spmM->col(s).maxCoeff(&max_idx);
                 //result.push_back((int) max_idx);
-                result[(i + s) * n + j] = (int)max_idx;
+                result[(i + s) * n + j] = (int) max_idx;
                 spmM->coeffRef(max_idx, s) = 0.0;
             }
         }
