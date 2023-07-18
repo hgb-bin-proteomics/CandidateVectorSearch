@@ -67,9 +67,6 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 currentIdx++;
             }
 
-            // time c++ call
-            var sw = Stopwatch.StartNew();
-
             // get pointer addresses and call c++ function
             var cValuesLoc = GCHandle.Alloc(candidateValues, GCHandleType.Pinned);
             var cIdxLoc = GCHandle.Alloc(candidatesIdx, GCHandleType.Pinned);
@@ -78,6 +75,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             var sValuesLoc = GCHandle.Alloc(spectraValues, GCHandleType.Pinned);
             var sIdxLoc = GCHandle.Alloc(spectraIdx, GCHandleType.Pinned);
             var resultArrayEigen = new int[spectraIdx.Length * topN];
+            var resultArrayEigenB = new int[spectraIdx.Length * topN];
             var resultArrayCuda = new int[spectraIdx.Length * topN];
             var memStat = 1;
             try
@@ -89,6 +87,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
+                var sw1 = Stopwatch.StartNew();
+
                 IntPtr resultEigen = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                        candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
                                                        topN, (float) 0.02);
@@ -96,6 +96,22 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 Marshal.Copy(resultEigen, resultArrayEigen, 0, spectraIdx.Length * topN);
 
                 memStat = releaseMemory(resultEigen);
+
+                sw1.Stop();
+
+                var sw2 = Stopwatch.StartNew();
+
+                IntPtr resultEigenB = findTopCandidatesBatched(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                               candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                                                               topN, (float) 0.02, 100);
+
+                Marshal.Copy(resultEigenB, resultArrayEigenB, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemory(resultEigenB);
+
+                sw2.Stop();
+
+                var sw3 = Stopwatch.StartNew();
 
                 IntPtr resultCuda = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr,
                                                           sValuesPtr, sIdxPtr,
@@ -106,6 +122,15 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 Marshal.Copy(resultCuda, resultArrayCuda, 0, spectraIdx.Length * topN);
 
                 memStat = releaseMemoryCuda(resultCuda);
+
+                sw3.Stop();
+
+                Console.WriteLine("Time for candidate search Eigen SpMV:");
+                Console.WriteLine(sw1.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Eigen SpMM:");
+                Console.WriteLine(sw2.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Cuda SpMV:");
+                Console.WriteLine(sw3.Elapsed.TotalSeconds.ToString());
             }
             catch (Exception ex)
             {
@@ -122,18 +147,27 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 if (sIdxLoc.IsAllocated) { sIdxLoc.Free(); }
             }
 
-            // end time c++ call
-            sw.Stop();
+            Console.WriteLine($"Top {topN} of the first spectrum:");
 
             for (int i = 0; i < topN; i++)
             {
                 Console.WriteLine(resultArrayEigen[i]);
+                Console.WriteLine(resultArrayEigenB[i]);
                 Console.WriteLine(resultArrayCuda[i]);
+                Console.WriteLine("-----");
+            }
+
+            Console.WriteLine($"Top {topN} of the last spectrum:");
+
+            for (int i = spectraIdx.Length * topN - topN; i < spectraIdx.Length * topN; i++)
+            {
+                Console.WriteLine(resultArrayEigen[i]);
+                Console.WriteLine(resultArrayEigenB[i]);
+                Console.WriteLine(resultArrayCuda[i]);
+                Console.WriteLine("-----");
             }
 
             Console.WriteLine($"MemStat: {memStat}");
-            Console.WriteLine("Time for candidate search (SpMV):");
-            Console.WriteLine(sw.Elapsed.TotalSeconds.ToString());
 
             //
             GC.Collect();
