@@ -6,8 +6,8 @@
 #include <iostream>
 
 const int versionMajor = 1;
-const int versionMinor = 2;
-const int versionFix = 0;
+const int versionMinor = 3;
+const int versionFix = 1;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -28,6 +28,13 @@ extern "C" {
                                   int, int, 
                                   int, int, 
                                   int, float);
+
+    EXPORT int* findTopCandidatesBatched(int*, int*,
+                                         int*, int*,
+                                         int, int,
+                                         int, int,
+                                         int, float,
+                                         int);
 
     EXPORT int releaseMemory(int*);
 }
@@ -113,6 +120,123 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
         delete v;
         spmv = NULL;
         v = NULL;
+    }
+
+    m->resize(0, 0);
+    delete m;
+    m = NULL;
+
+    //return result.data();
+    return result;
+}
+
+/// <summary>
+/// A function that calculates the top n candidates for each spectrum.
+/// </summary>
+/// <param name="candidatesValues">An integer array of theoretical ion masses for all candidates flattened.</param>
+/// <param name="candidatesIdx">An integer array that contains indices of where each candidate starts in candidatesValues.</param>
+/// <param name="spectraValues">An integer array of peaks from experimental spectra flattened.</param>
+/// <param name="spectraIdx">An integer array that contains indices of where each spectrum starts in spectraValues.</param>
+/// <param name="cVLength">Length (int) of candidatesValues.</param>
+/// <param name="cILength">Length (int) of candidatesIdx.</param>
+/// <param name="sVLength">Length (int) of spectraValues.</param>
+/// <param name="sILength">Length (int) of spectraIdx.</param>
+/// <param name="n">How many of the best hits should be returned (int).</param>
+/// <param name="tolerance">Tolerance for peak matching (float).</param>
+/// <param name="batchSize">How many spectra (int) should be searched at once.</param>
+/// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
+                              int* spectraValues, int* spectraIdx,
+                              int cVLength, int cILength,
+                              int sVLength, int sILength,
+                              int n, float tolerance,
+                              int batchSize) {
+
+    std::cout << "Running Eigen matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+
+    auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
+    m->reserve(Eigen::VectorXi::Constant(cILength, APPROX_NNZ_PER_ROW));
+
+    int currentRow = 0;
+    for (int i = 0; i < cILength; ++i) {
+        int startIter = candidatesIdx[i];
+        int endIter = i + 1 == cILength ? cVLength : candidatesIdx[i + 1];
+        int nrNonZero = endIter - startIter;
+        float val = 1.0 / nrNonZero;
+        for (int j = startIter; j < endIter; ++j) {
+            m->insert(currentRow, candidatesValues[j]) = val;
+        }
+        ++currentRow;
+    }
+
+    m->makeCompressed();
+
+    //auto result = new std::vector<int>;
+    //result.reserve(sILength * n);
+    auto* result = new int[sILength * n];
+    auto t = round(tolerance * MASS_MULTIPLIER);
+
+    for (int i = 0; i < sILength; i += batchSize) {
+
+        auto* M = new Eigen::SparseMatrix<float, Eigen::RowMajor>(ENCODING_SIZE, batchSize);
+        std::vector<Eigen::Triplet<float>> M_entries;
+        M_entries.reserve(1000 * batchSize);
+
+        for (int s = 0; s < batchSize; ++s) {
+
+            if (i + s >= sILength) {
+                break;
+            }
+
+            int startIter = spectraIdx[i + s];
+            int endIter = i + s + 1 == sILength ? sVLength : spectraIdx[i + s + 1];
+            auto* v = new float[ENCODING_SIZE] {0.0};
+            for (int j = startIter; j < endIter; ++j) {
+                auto currentPeak = spectraValues[j];
+                auto minPeak = currentPeak - t > 0 ? currentPeak - t : 0;
+                auto maxPeak = currentPeak + t < ENCODING_SIZE ? currentPeak + t : ENCODING_SIZE - 1;
+
+                for (int k = minPeak; k <= maxPeak; ++k) {
+                    float currentVal = v[k];
+                    float newVal = normpdf((float)k, (float)currentPeak, (float)t / 3);
+                    v[k] = max(currentVal, newVal);
+                }
+            }
+            for (int j = 0; j < ENCODING_SIZE; ++j) {
+                if (v[j] != 0.0) {
+                    M_entries.push_back(Eigen::Triplet<float>(j, s, v[j]));
+                }
+            }
+            delete[] v;
+        }
+
+        M->setFromTriplets(M_entries.begin(), M_entries.end());
+        M->makeCompressed();
+
+        auto* spmM = new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(cILength, batchSize);
+        *spmM = Eigen::Product(*m, *M);
+
+        for (int s = 0; s < batchSize; ++s) {
+
+            if (i + s >= sILength) {
+                break;
+            }
+
+            for (int j = 0; j < n; ++j) {
+                Eigen::Index max_idx;
+                float max = spmM->col(s).maxCoeff(&max_idx);
+                //result.push_back((int) max_idx);
+                result[(i + s) * n + j] = (int)max_idx;
+                spmM->coeffRef(max_idx, s) = 0.0;
+            }
+        }
+
+        spmM->resize(0, 0);
+        delete spmM;
+        spmM = NULL;
+        M->resize(0, 0);
+        delete M;
+        M = NULL;
     }
 
     m->resize(0, 0);
