@@ -7,7 +7,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 3;
-const int versionFix = 2;
+const int versionFix = 3;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -213,7 +213,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
         M->setFromTriplets(M_entries.begin(), M_entries.end());
         M->makeCompressed();
 
-        auto* spmM = new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(cILength, batchSize);
+        auto* spmM = new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(cILength, batchSize);
         *spmM = Eigen::Product(*m, *M);
 
         for (int s = 0; s < batchSize; ++s) {
