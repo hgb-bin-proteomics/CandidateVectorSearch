@@ -28,7 +28,8 @@ extern "C" {
                                   int, int, 
                                   int, int, 
                                   int, float,
-                                  bool, bool);
+                                  bool, bool,
+                                  int);
 
     EXPORT int* findTopCandidatesBatched(int*, int*,
                                          int*, int*,
@@ -36,6 +37,7 @@ extern "C" {
                                          int, int,
                                          int, float,
                                          bool, bool,
+                                         int,
                                          int);
 
     EXPORT int releaseMemory(int*);
@@ -65,7 +67,8 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
                        int cVLength, int cILength, 
                        int sVLength, int sILength,
                        int n, float tolerance,
-                       bool normalize, bool gaussianTol) {
+                       bool normalize, bool gaussianTol,
+                       int verbose) {
 
     std::cout << "Running Eigen vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
@@ -125,6 +128,10 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
         delete v;
         spmv = NULL;
         v = NULL;
+
+        if (verbose != 0 && (i + 1) % verbose == 0) {
+            std::cout << "Searched " << i + 1 << " spectra in total..." << std::endl;
+        }
     }
 
     m->resize(0, 0);
@@ -158,7 +165,8 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
                               int sVLength, int sILength,
                               int n, float tolerance,
                               bool normalize, bool gaussianTol,
-                              int batchSize) {
+                              int batchSize,
+                              int verbose) {
 
     std::cout << "Running Eigen matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
@@ -245,6 +253,10 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
         M->resize(0, 0);
         delete M;
         M = NULL;
+
+        if (verbose != 0 && (i + batchSize) % verbose == 0) {
+            std::cout << "Searched " << i + batchSize << " spectra in total..." << std::endl;
+        }
     }
 
     m->resize(0, 0);
