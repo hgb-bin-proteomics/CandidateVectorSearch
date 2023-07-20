@@ -62,7 +62,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
 
                 IntPtr resultEigen = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                        candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                       topN, (float) 0.0);
+                                                       topN, (float) 0.0, NORMALIZE, USE_GAUSSIAN);
 
                 Marshal.Copy(resultEigen, resultArrayEigen, 0, spectraIdx.Length * topN);
 

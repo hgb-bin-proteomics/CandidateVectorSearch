@@ -8,6 +8,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
         const int MASS_RANGE = 1300;
         const int MASS_MULTIPLIER = 100;
         const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
+        const bool NORMALIZE = true;
+        const bool USE_GAUSSIAN = true;
 
         public static void Main(string[] args)
         {

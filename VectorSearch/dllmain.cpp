@@ -6,7 +6,7 @@
 #include <iostream>
 
 const int versionMajor = 1;
-const int versionMinor = 3;
+const int versionMinor = 4;
 const int versionFix = 3;
 
 #define METHOD_EXPORTS
@@ -27,13 +27,15 @@ extern "C" {
                                   int*, int*, 
                                   int, int, 
                                   int, int, 
-                                  int, float);
+                                  int, float,
+                                  bool, bool);
 
     EXPORT int* findTopCandidatesBatched(int*, int*,
                                          int*, int*,
                                          int, int,
                                          int, int,
                                          int, float,
+                                         bool, bool,
                                          int);
 
     EXPORT int releaseMemory(int*);
@@ -55,12 +57,15 @@ float normpdf(float, float, float);
 /// <param name="sILength">Length (int) of spectraIdx.</param>
 /// <param name="n">How many of the best hits should be returned (int).</param>
 /// <param name="tolerance">Tolerance for peak matching (float).</param>
+/// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
+/// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
 int* findTopCandidates(int* candidatesValues, int* candidatesIdx, 
                        int* spectraValues, int* spectraIdx, 
                        int cVLength, int cILength, 
                        int sVLength, int sILength,
-                       int n, float tolerance) {
+                       int n, float tolerance,
+                       bool normalize, bool gaussianTol) {
 
     std::cout << "Running Eigen vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
@@ -72,7 +77,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
         int startIter = candidatesIdx[i];
         int endIter = i + 1 == cILength ? cVLength : candidatesIdx[i + 1];
         int nrNonZero = endIter - startIter;
-        float val = 1.0 / nrNonZero;
+        float val = normalize ? 1.0 / (float) nrNonZero : 1.0;
         for (int j = startIter; j < endIter; ++j) {
             m->insert(currentRow, candidatesValues[j]) = val;
         }
@@ -84,7 +89,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
     //auto result = new std::vector<int>;
     //result.reserve(sILength * n);
     auto* result = new int[sILength * n];
-    auto t = round(tolerance * MASS_MULTIPLIER);
+    float t = round(tolerance * MASS_MULTIPLIER);
 
     for (int i = 0; i < sILength; ++i) {
         int startIter = spectraIdx[i];
@@ -98,7 +103,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
 
             for (int k = minPeak; k <= maxPeak; ++k) {
                 float currentVal = v->coeffRef(k);
-                float newVal = normpdf((float) k, (float) currentPeak, (float) (t / 3.0));
+                float newVal = gaussianTol ? normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) : 1.0;
                 v->coeffRef(k) = max(currentVal, newVal);
             }
         }
@@ -143,6 +148,8 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
 /// <param name="sILength">Length (int) of spectraIdx.</param>
 /// <param name="n">How many of the best hits should be returned (int).</param>
 /// <param name="tolerance">Tolerance for peak matching (float).</param>
+/// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
+/// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
 /// <param name="batchSize">How many spectra (int) should be searched at once.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
 int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
@@ -150,6 +157,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
                               int cVLength, int cILength,
                               int sVLength, int sILength,
                               int n, float tolerance,
+                              bool normalize, bool gaussianTol,
                               int batchSize) {
 
     std::cout << "Running Eigen matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
@@ -162,7 +170,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
         int startIter = candidatesIdx[i];
         int endIter = i + 1 == cILength ? cVLength : candidatesIdx[i + 1];
         int nrNonZero = endIter - startIter;
-        float val = 1.0 / nrNonZero;
+        float val = normalize ? 1.0 / (float) nrNonZero : 1.0;
         for (int j = startIter; j < endIter; ++j) {
             m->insert(currentRow, candidatesValues[j]) = val;
         }
@@ -174,7 +182,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
     //auto result = new std::vector<int>;
     //result.reserve(sILength * n);
     auto* result = new int[sILength * n];
-    auto t = round(tolerance * MASS_MULTIPLIER);
+    float t = round(tolerance * MASS_MULTIPLIER);
 
     for (int i = 0; i < sILength; i += batchSize) {
 
@@ -198,7 +206,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
 
                 for (int k = minPeak; k <= maxPeak; ++k) {
                     float currentVal = v[k];
-                    float newVal = normpdf((float) k, (float) currentPeak, (float) (t / 3.0));
+                    float newVal = gaussianTol ? normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) : 1.0;
                     v[k] = max(currentVal, newVal);
                 }
             }

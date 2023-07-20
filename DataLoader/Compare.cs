@@ -91,7 +91,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
 
                 IntPtr resultEigen = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                        candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                       topN, (float) 0.02);
+                                                       topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN);
 
                 Marshal.Copy(resultEigen, resultArrayEigen, 0, spectraIdx.Length * topN);
 
@@ -103,7 +103,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
 
                 IntPtr resultEigenB = findTopCandidatesBatched(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                                candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                               topN, (float) 0.02, 100);
+                                                               topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, 100);
 
                 Marshal.Copy(resultEigenB, resultArrayEigenB, 0, spectraIdx.Length * topN);
 
