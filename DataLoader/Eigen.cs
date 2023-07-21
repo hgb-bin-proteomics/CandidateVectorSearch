@@ -123,7 +123,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                              spectraValues.Length, spectraIdx.Length,
                                                              topN, (float) 0.02,
                                                              NORMALIZE, USE_GAUSSIAN,
-                                                             100,
+                                                             BATCH_SIZE,
                                                              1000);
 
                     Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
