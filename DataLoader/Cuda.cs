@@ -12,7 +12,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                            int cRL, int cNNZ,
                                                            int sVL, int sIL,
                                                            int n, float tolerance,
-                                                           bool normalize, bool gaussianTol);
+                                                           bool normalize, bool gaussianTol,
+                                                           int verbose);
 
         [DllImport(dllCuda, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr findTopCandidatesCudaBatched(IntPtr cR, IntPtr cI,
@@ -21,7 +22,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                                   int sVL, int sIL,
                                                                   int n, float tolerance,
                                                                   bool normalize, bool gaussianTol,
-                                                                  int batchSize);
+                                                                  int batchSize,
+                                                                  int verbose);
 
         [DllImport(dllCuda, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemoryCuda(IntPtr result);
@@ -108,7 +110,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                           csrRowoffsets.Length, csrIdx.Length,
                                                           spectraValues.Length, spectraIdx.Length,
                                                           topN, (float) 0.02,
-                                                          NORMALIZE, USE_GAUSSIAN);
+                                                          NORMALIZE, USE_GAUSSIAN,
+                                                          1000);
 
                     Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
 
@@ -127,7 +130,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                                  spectraValues.Length, spectraIdx.Length,
                                                                  topN, (float) 0.02,
                                                                  NORMALIZE, USE_GAUSSIAN,
-                                                                 BATCH_SIZE);
+                                                                 BATCH_SIZE,
+                                                                 1000);
 
                     Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
 

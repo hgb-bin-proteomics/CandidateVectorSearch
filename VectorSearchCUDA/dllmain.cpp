@@ -11,7 +11,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 3;
-const int versionFix = 3;
+const int versionFix = 4;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -31,7 +31,8 @@ extern "C" {
                                       int, int, 
                                       int, int,
                                       int, float,
-                                      bool, bool);
+                                      bool, bool,
+                                      int);
 
     EXPORT int* findTopCandidatesCudaBatched(int*, int*,
                                              int*, int*,
@@ -39,6 +40,7 @@ extern "C" {
                                              int, int,
                                              int, float,
                                              bool, bool,
+                                             int,
                                              int);
 
     EXPORT int releaseMemoryCuda(int*);
@@ -86,13 +88,15 @@ int CHECK_CUSPARSE(cusparseStatus_t status)
 /// <param name="tolerance">Tolerance for peak matching (float).</param>
 /// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
 /// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
+/// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
 int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, 
                            int* spectraValues, int* spectraIdx,
                            int csrRowoffsetsLength, int csrNNZ,
                            int sVLength, int sILength,
                            int n, float tolerance,
-                           bool normalize, bool gaussianTol) {
+                           bool normalize, bool gaussianTol,
+                           int verbose) {
 
     if (n >= csrRowoffsetsLength) {
         throw std::invalid_argument("Cannot return more hits than number of candidates!");
@@ -201,6 +205,10 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx,
         }
 
         delete[] idx;
+
+        if (verbose != 0 && (i + 1) % verbose == 0) {
+            std::cout << "Searched " << i + 1 << " spectra in total..." << std::endl;
+        }
     }
 
     // device destroy descriptors
@@ -239,6 +247,7 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx,
 /// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
 /// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
 /// <param name="batchSize">How many spectra (int) should be searched at once.</param>
+/// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
 int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
                                   int* spectraValues, int* spectraIdx,
@@ -246,7 +255,8 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
                                   int sVLength, int sILength,
                                   int n, float tolerance,
                                   bool normalize, bool gaussianTol,
-                                  int batchSize) {
+                                  int batchSize,
+                                  int verbose) {
 
     if (n >= csrRowoffsetsLength) {
         throw std::invalid_argument("Cannot return more hits than number of candidates!");
@@ -462,6 +472,10 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
         CHECK_CUDA(cudaFree(dM_csrValues));
         CHECK_CUDA(cudaFree(dspgemM_csrColIdx));
         CHECK_CUDA(cudaFree(dspgemM_csrValues));
+
+        if (verbose != 0 && (i + batchSize) % verbose == 0) {
+            std::cout << "Searched " << i + batchSize << " spectra in total..." << std::endl;
+        }
     }
 
     // device destroy descriptors
