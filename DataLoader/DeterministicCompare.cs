@@ -60,19 +60,20 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
-                IntPtr resultEigen = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
-                                                       candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                       topN, (float) 0.0, NORMALIZE, USE_GAUSSIAN, 0);
+                //IntPtr resultEigen = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                //                                       candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                //                                       topN, (float) 0.0, NORMALIZE, USE_GAUSSIAN, 0);
+                //
+                //Marshal.Copy(resultEigen, resultArrayEigen, 0, spectraIdx.Length * topN);
+                //
+                //memStat = releaseMemory(resultEigen);
 
-                Marshal.Copy(resultEigen, resultArrayEigen, 0, spectraIdx.Length * topN);
-
-                memStat = releaseMemory(resultEigen);
-
-                IntPtr resultCuda = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr,
-                                                          sValuesPtr, sIdxPtr,
-                                                          csrRowoffsets.Length, csrIdx.Length,
-                                                          spectraValues.Length, spectraIdx.Length,
-                                                          topN, (float) 0.0);
+                IntPtr resultCuda = findTopCandidatesCudaBatched(csrRowoffsetsPtr, csrIdxPtr,
+                                                                 sValuesPtr, sIdxPtr,
+                                                                 csrRowoffsets.Length, csrIdx.Length,
+                                                                 spectraValues.Length, spectraIdx.Length,
+                                                                 topN, (float) 0.0,
+                                                                 NORMALIZE, USE_GAUSSIAN, 2);
 
                 Marshal.Copy(resultCuda, resultArrayCuda, 0, spectraIdx.Length * topN);
 
