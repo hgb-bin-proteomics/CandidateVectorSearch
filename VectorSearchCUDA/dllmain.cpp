@@ -9,8 +9,8 @@
 #include <algorithm>
 
 const int versionMajor = 1;
-const int versionMinor = 1;
-const int versionFix = 0;
+const int versionMinor = 3;
+const int versionFix = 3;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -29,7 +29,8 @@ extern "C" {
                                       int*, int*,
                                       int, int, 
                                       int, int,
-                                      int, float);
+                                      int, float,
+                                      bool, bool);
 
     EXPORT int releaseMemoryCuda(int*);
 }
@@ -73,16 +74,24 @@ int CHECK_CUSPARSE(cusparseStatus_t status)
 /// <param name="sILength">Length (int) of spectraIdx.</param>
 /// <param name="n">How many of the best hits should be returned (int).</param>
 /// <param name="tolerance">Tolerance for peak matching (float).</param>
+/// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
+/// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
 int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, 
                            int* spectraValues, int* spectraIdx,
                            int csrRowoffsetsLength, int csrNNZ,
                            int sVLength, int sILength,
                            int n, float tolerance) {
+                           int n, float tolerance,
+                           bool normalize, bool gaussianTol) {
+
+    if (n >= csrRowoffsetsLength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
 
     std::cout << "Running CUDA vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
-    int t = round(tolerance * MASS_MULTIPLIER);
+    float t = round(tolerance * MASS_MULTIPLIER);
     int* result = new int[sILength * n];
     float* csrValues = new float[csrNNZ];
     float* MVresult = new float[csrRowoffsetsLength - 1] {0.0};
@@ -92,7 +101,7 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx,
         int startIter = csrRowoffsets[i];
         int endIter = csrRowoffsets[i + 1];
         int nrNonZero = endIter - startIter;
-        float val = 1.0 / nrNonZero;
+        float val = normalize ? 1.0 / (float) nrNonZero : 1.0;
         for (int j = startIter; j < endIter; ++j) {
             csrValues[j] = val;
         }
@@ -151,7 +160,7 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx,
 
             for (int k = minPeak; k <= maxPeak; ++k) {
                 float currentVal = V[k];
-                float newVal = normpdf((float) k, (float) currentPeak, (float) (t / 3.0));
+                float newVal = gaussianTol ? normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) : 1.0;
                 V[k] = max(currentVal, newVal);
             }
         }

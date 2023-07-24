@@ -11,7 +11,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                            IntPtr sV, IntPtr sI,
                                                            int cRL, int cNNZ,
                                                            int sVL, int sIL,
-                                                           int n, float tolerance);
+                                                           int n, float tolerance,
+                                                           bool normalize, bool gaussianTol);
 
         [DllImport(dllCuda, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemoryCuda(IntPtr result);
