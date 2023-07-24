@@ -11,12 +11,22 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                                                            IntPtr sV, IntPtr sI,
                                                            int cRL, int cNNZ,
                                                            int sVL, int sIL,
-                                                           int n, float tolerance);
+                                                           int n, float tolerance,
+                                                           bool normalize, bool gaussianTol);
+
+        [DllImport(dllCuda, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidatesCudaBatched(IntPtr cR, IntPtr cI,
+                                                                  IntPtr sV, IntPtr sI,
+                                                                  int cRL, int cNNZ,
+                                                                  int sVL, int sIL,
+                                                                  int n, float tolerance,
+                                                                  bool normalize, bool gaussianTol,
+                                                                  int batchSize);
 
         [DllImport(dllCuda, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemoryCuda(IntPtr result);
 
-        public static int Cuda(int nrCandidates, int nrSpectra, int topN, Random r)
+        public static int Cuda(int nrCandidates, int nrSpectra, int topN, Random r, bool batched)
         {
             // generate candidate vectors
             var csrRowoffsets = new int[nrCandidates + 1];
@@ -86,20 +96,43 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             var memStat = 1;
             try
             {
-                IntPtr csrRowoffsetsPtr = csrRowoffsetsLoc.AddrOfPinnedObject();
-                IntPtr csrIdxPtr = csrIdxLoc.AddrOfPinnedObject();
-                IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
-                IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
+                if (!batched)
+                {
+                    IntPtr csrRowoffsetsPtr = csrRowoffsetsLoc.AddrOfPinnedObject();
+                    IntPtr csrIdxPtr = csrIdxLoc.AddrOfPinnedObject();
+                    IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
+                    IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
-                IntPtr result = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr, 
-                                                      sValuesPtr, sIdxPtr,
-                                                      csrRowoffsets.Length, csrIdx.Length, 
-                                                      spectraValues.Length, spectraIdx.Length,
-                                                      topN, (float) 0.02);
+                    IntPtr result = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr,
+                                                          sValuesPtr, sIdxPtr,
+                                                          csrRowoffsets.Length, csrIdx.Length,
+                                                          spectraValues.Length, spectraIdx.Length,
+                                                          topN, (float) 0.02,
+                                                          NORMALIZE, USE_GAUSSIAN);
 
-                Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+                    Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
 
-                memStat = releaseMemoryCuda(result);
+                    memStat = releaseMemoryCuda(result);
+                }
+                else
+                {
+                    IntPtr csrRowoffsetsPtr = csrRowoffsetsLoc.AddrOfPinnedObject();
+                    IntPtr csrIdxPtr = csrIdxLoc.AddrOfPinnedObject();
+                    IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
+                    IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
+
+                    IntPtr result = findTopCandidatesCudaBatched(csrRowoffsetsPtr, csrIdxPtr,
+                                                                 sValuesPtr, sIdxPtr,
+                                                                 csrRowoffsets.Length, csrIdx.Length,
+                                                                 spectraValues.Length, spectraIdx.Length,
+                                                                 topN, (float) 0.02,
+                                                                 NORMALIZE, USE_GAUSSIAN,
+                                                                 BATCH_SIZE);
+
+                    Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+
+                    memStat = releaseMemoryCuda(result);
+                }
             }
             catch (Exception ex)
             {

@@ -8,6 +8,9 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
         const int MASS_RANGE = 1300;
         const int MASS_MULTIPLIER = 100;
         const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
+        const bool NORMALIZE = true;
+        const bool USE_GAUSSIAN = true;
+        const int BATCH_SIZE = 100;
 
         public static void Main(string[] args)
         {
@@ -40,7 +43,12 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             // call subroutine for specified mode
             if (mode == "Cuda")
             {
-                var status = Cuda(nrCandidates, nrSpectra, topN, r);
+                var status = Cuda(nrCandidates, nrSpectra, topN, r, false);
+                Console.WriteLine($"Cuda routine exited with status: {status}");
+            }
+            if (mode == "CudaB")
+            {
+                var status = Cuda(nrCandidates, nrSpectra, topN, r, true);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
             }
             else if (mode == "Eigen")
@@ -57,6 +65,11 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             {
                 var status = Compare(nrCandidates, nrSpectra, topN, r);
                 Console.WriteLine($"Compare routine exited with status: {status}");
+            }
+            else if (mode == "CompareD")
+            {
+                var status = DeterministicCompare();
+                Console.WriteLine($"Deterministic compare routine exited with status: {status}");
             }
             else
             {
