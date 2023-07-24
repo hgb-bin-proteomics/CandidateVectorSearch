@@ -61,6 +61,7 @@ float normpdf(float, float, float);
 /// <param name="tolerance">Tolerance for peak matching (float).</param>
 /// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
 /// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
+/// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
 int* findTopCandidates(int* candidatesValues, int* candidatesIdx, 
                        int* spectraValues, int* spectraIdx, 
@@ -158,6 +159,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
 /// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
 /// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
 /// <param name="batchSize">How many spectra (int) should be searched at once.</param>
+/// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
 int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
                               int* spectraValues, int* spectraIdx,
