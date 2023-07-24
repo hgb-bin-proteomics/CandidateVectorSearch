@@ -449,7 +449,7 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
                 }
             }
             
-            // need to create an idx vector because we can sort rowIdx directly
+            // need to create an idx vector because we can't sort rowIdx directly
             //std::sort(rowIdx.data(), rowIdx.data() + rowIdx.size(), [&](int i, int j) {return rowValues[i] > rowValues[j];});
             std::vector<int> idx(rowIdx.size());
             std::iota(idx.begin(), idx.end(), 0);
