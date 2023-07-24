@@ -46,7 +46,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 var status = Cuda(nrCandidates, nrSpectra, topN, r, false);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
             }
-            if (mode == "CudaB")
+            else if (mode == "CudaB")
             {
                 var status = Cuda(nrCandidates, nrSpectra, topN, r, true);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
