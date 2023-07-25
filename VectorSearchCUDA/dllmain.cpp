@@ -440,6 +440,11 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
         
         // host result max
         for (int s = 0; s < batchSize; ++s) {
+
+            if (i + s >= sILength) {
+                break;
+            }
+
             std::vector<int> rowIdx;
             std::vector<float> rowValues;
             for (int j = 0; j < spgemM_nnz; ++j) {
