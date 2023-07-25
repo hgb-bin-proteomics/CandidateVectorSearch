@@ -78,6 +78,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             var resultArrayEigenB = new int[spectraIdx.Length * topN];
             var resultArrayCuda = new int[spectraIdx.Length * topN];
             var resultArrayCudaB = new int[spectraIdx.Length * topN];
+            var resultArrayCudaB2 = new int[spectraIdx.Length * topN];
             var memStat = 1;
             try
             {
@@ -140,6 +141,20 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
 
                 sw4.Stop();
 
+                var sw5 = Stopwatch.StartNew();
+
+                IntPtr resultCudaB2 = findTopCandidatesCudaBatched2(csrRowoffsetsPtr, csrIdxPtr,
+                                                                    sValuesPtr, sIdxPtr,
+                                                                    csrRowoffsets.Length, csrIdx.Length,
+                                                                    spectraValues.Length, spectraIdx.Length,
+                                                                    topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, BATCH_SIZE, 0);
+
+                Marshal.Copy(resultCudaB2, resultArrayCudaB2, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemoryCuda(resultCudaB2);
+
+                sw5.Stop();
+
                 Console.WriteLine("Time for candidate search Eigen SpMV:");
                 Console.WriteLine(sw1.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpMM:");
@@ -148,6 +163,8 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 Console.WriteLine(sw3.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Cuda SpGEMM:");
                 Console.WriteLine(sw4.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Cuda SpMM:");
+                Console.WriteLine(sw5.Elapsed.TotalSeconds.ToString());
             }
             catch (Exception ex)
             {
@@ -172,6 +189,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 Console.WriteLine(resultArrayEigenB[i]);
                 Console.WriteLine(resultArrayCuda[i]);
                 Console.WriteLine(resultArrayCudaB[i]);
+                Console.WriteLine(resultArrayCudaB2[i]);
                 Console.WriteLine("-----");
             }
 
@@ -183,6 +201,7 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
                 Console.WriteLine(resultArrayEigenB[i]);
                 Console.WriteLine(resultArrayCuda[i]);
                 Console.WriteLine(resultArrayCudaB[i]);
+                Console.WriteLine(resultArrayCudaB2[i]);
                 Console.WriteLine("-----");
             }
 

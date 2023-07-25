@@ -10,8 +10,8 @@
 #include <vector>
 
 const int versionMajor = 1;
-const int versionMinor = 3;
-const int versionFix = 4;
+const int versionMinor = 4;
+const int versionFix = 5;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -42,6 +42,15 @@ extern "C" {
                                              bool, bool,
                                              int,
                                              int);
+
+    EXPORT int* findTopCandidatesCudaBatched2(int*, int*,
+                                              int*, int*,
+                                              int, int,
+                                              int, int,
+                                              int, float,
+                                              bool, bool,
+                                              int,
+                                              int);
 
     EXPORT int releaseMemoryCuda(int*);
 }
@@ -262,7 +271,7 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
         throw std::invalid_argument("Cannot return more hits than number of candidates!");
     }
 
-    std::cout << "Running CUDA matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running CUDA sparse matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
     float t = round(tolerance * MASS_MULTIPLIER);
     int* result = new int[sILength * n];
@@ -440,6 +449,11 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
         
         // host result max
         for (int s = 0; s < batchSize; ++s) {
+
+            if (i + s >= sILength) {
+                break;
+            }
+
             std::vector<int> rowIdx;
             std::vector<float> rowValues;
             for (int j = 0; j < spgemM_nnz; ++j) {
@@ -449,7 +463,7 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
                 }
             }
             
-            // need to create an idx vector because we can sort rowIdx directly
+            // need to create an idx vector because we can't sort rowIdx directly
             //std::sort(rowIdx.data(), rowIdx.data() + rowIdx.size(), [&](int i, int j) {return rowValues[i] > rowValues[j];});
             std::vector<int> idx(rowIdx.size());
             std::iota(idx.begin(), idx.end(), 0);
@@ -461,6 +475,11 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
                 }
             }
         }
+
+        // host memory deallocation
+        delete[] spgemM_csrRowoffsets;
+        delete[] spgemM_csrColIdx;
+        delete[] spgemM_csrValues;
 
         // device destroy descriptors
         CHECK_CUSPARSE(cusparseDestroySpMat(Mat));
@@ -489,6 +508,207 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
     CHECK_CUDA(cudaFree(dspgemM_csrRowoffsets));
     CHECK_CUDA(cudaFree(dBuffer1));
     CHECK_CUDA(cudaFree(dBuffer2));
+
+    // host memory deallocation
+    delete[] csrValues;
+
+    return result;
+}
+
+/// <summary>
+/// A function that calculates the top n candidates for each spectrum. Uses cusparseSpMM to calculate matrix product.
+/// </summary>
+/// <param name="csrRowoffsets">Rowoffsets (int array) of the CSR sparse matrix (L: rows + 1).</param>
+/// <param name="csrColIdx">Column indices (int array) of the CSR sparse matrix (L: NNZ).</param>
+/// <param name="spectraValues">An integer array of peaks from experimental spectra flattened.</param>
+/// <param name="spectraIdx">An integer array that contains indices of where each spectrum starts in spectraValues.</param>
+/// <param name="csrRowoffsetsLength">Length (int) of csrRowoffsets (rows + 1).</param>
+/// <param name="csrNNZ">Number of non-zero entries (int) in the CSR sparse matrix.</param>
+/// <param name="sVLength">Length (int) of spectraValues.</param>
+/// <param name="sILength">Length (int) of spectraIdx.</param>
+/// <param name="n">How many of the best hits should be returned (int).</param>
+/// <param name="tolerance">Tolerance for peak matching (float).</param>
+/// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
+/// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
+/// <param name="batchSize">How many spectra (int) should be searched at once.</param>
+/// <param name="verbose">Print info every (int) processed spectra.</param>
+/// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+int* findTopCandidatesCudaBatched2(int* csrRowoffsets, int* csrColIdx,
+                                   int* spectraValues, int* spectraIdx,
+                                   int csrRowoffsetsLength, int csrNNZ,
+                                   int sVLength, int sILength,
+                                   int n, float tolerance,
+                                   bool normalize, bool gaussianTol,
+                                   int batchSize,
+                                   int verbose) {
+
+    if (n >= csrRowoffsetsLength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
+
+    std::cout << "Running CUDA dense matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+
+    float t = round(tolerance * MASS_MULTIPLIER);
+    int* result = new int[sILength * n];
+    float* csrValues = new float[csrNNZ];
+
+    // create csrValues
+    for (int i = 0; i < csrRowoffsetsLength - 1; ++i) {
+        int startIter = csrRowoffsets[i];
+        int endIter = csrRowoffsets[i + 1];
+        int nrNonZero = endIter - startIter;
+        float val = normalize ? 1.0 / (float) nrNonZero : 1.0;
+        for (int j = startIter; j < endIter; ++j) {
+            csrValues[j] = val;
+        }
+    }
+
+    // cusparse spmM variables
+    float alpha = 1.0;
+    float beta = 0.0;
+
+    // device memory management
+    int* dm_csrRowoffsets;
+    int* dm_csrColIdx;
+    float* dm_csrValues;
+    float* dM_dnValues;
+    float* dspmM_dnValues;
+
+    // device buffer managment
+    void* dBuffer = NULL;
+    size_t bufferSize = 0;
+
+    // device m memory management
+    CHECK_CUDA(cudaMalloc((void**) &dm_csrRowoffsets, csrRowoffsetsLength * sizeof(int)));
+    CHECK_CUDA(cudaMalloc((void**) &dm_csrColIdx, csrNNZ * sizeof(int)));
+    CHECK_CUDA(cudaMalloc((void**) &dm_csrValues, csrNNZ * sizeof(float)));
+
+    // device m memory copy
+    CHECK_CUDA(cudaMemcpy(dm_csrRowoffsets, csrRowoffsets, csrRowoffsetsLength * sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA(cudaMemcpy(dm_csrColIdx, csrColIdx, csrNNZ * sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA(cudaMemcpy(dm_csrValues, csrValues, csrNNZ * sizeof(float), cudaMemcpyHostToDevice));
+
+    // device M memory management
+    CHECK_CUDA(cudaMalloc((void**) &dM_dnValues, ENCODING_SIZE * batchSize * sizeof(float)));
+
+    // device spmm memory management
+    CHECK_CUDA(cudaMalloc((void**) &dspmM_dnValues, (csrRowoffsetsLength - 1) * batchSize * sizeof(float)));
+
+    // device setup cusparse m
+    cusparseHandle_t handle = NULL;
+    cusparseSpMatDescr_t mat;
+
+    CHECK_CUSPARSE(cusparseCreate(&handle));
+    CHECK_CUSPARSE(cusparseCreateCsr(&mat, csrRowoffsetsLength - 1, ENCODING_SIZE, csrNNZ,
+                                     dm_csrRowoffsets, dm_csrColIdx, dm_csrValues,
+                                     CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+                                     CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F));
+
+    for (int i = 0; i < sILength; i += batchSize) {
+
+        // calculate spectrum matrix
+        float* M = new float[ENCODING_SIZE * batchSize] {0.0};
+
+        for (int s = 0; s < batchSize; ++s) {
+
+            if (i + s < sILength) {
+
+                int startIter = spectraIdx[i + s];
+                int endIter = i + s + 1 == sILength ? sVLength : spectraIdx[i + s + 1];
+
+                for (int j = startIter; j < endIter; ++j) {
+                    auto currentPeak = spectraValues[j];
+                    auto minPeak = currentPeak - t > 0 ? currentPeak - t : 0;
+                    auto maxPeak = currentPeak + t < ENCODING_SIZE ? currentPeak + t : ENCODING_SIZE - 1;
+
+                    for (int k = minPeak; k <= maxPeak; ++k) {
+                        float currentVal = M[s * ENCODING_SIZE + k];
+                        float newVal = gaussianTol ? normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) : 1.0;
+                        M[s * ENCODING_SIZE + k] = max(currentVal, newVal);
+                    }
+                }
+            }
+        }
+
+        // device setup cusparse M
+        cusparseDnMatDescr_t Mat;
+
+        CHECK_CUDA(cudaMemcpy(dM_dnValues, M, ENCODING_SIZE * batchSize * sizeof(float), cudaMemcpyHostToDevice));
+        CHECK_CUSPARSE(cusparseCreateDnMat(&Mat, ENCODING_SIZE, batchSize, ENCODING_SIZE, dM_dnValues,
+                                           CUDA_R_32F, CUSPARSE_ORDER_COL));
+
+        // host setup result matrix
+        float* spmm = new float[(csrRowoffsetsLength - 1) * batchSize] {0.0};
+
+        // device setup cusparse spmM result 
+        cusparseDnMatDescr_t spmM;
+
+        CHECK_CUDA(cudaMemcpy(dspmM_dnValues, spmm, (csrRowoffsetsLength - 1) * batchSize * sizeof(float), cudaMemcpyHostToDevice));
+        CHECK_CUSPARSE(cusparseCreateDnMat(&spmM, csrRowoffsetsLength - 1, batchSize, csrRowoffsetsLength - 1, dspmM_dnValues,
+                                           CUDA_R_32F, CUSPARSE_ORDER_COL));
+
+        // device allocate buffer
+        CHECK_CUSPARSE(cusparseSpMM_bufferSize(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                               &alpha, mat, Mat, &beta, spmM, CUDA_R_32F,
+                                               CUSPARSE_SPMM_CSR_ALG1, &bufferSize));
+        CHECK_CUDA(cudaMalloc(&dBuffer, bufferSize));
+
+        // device spmm computation
+        CHECK_CUSPARSE(cusparseSpMM(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                    &alpha, mat, Mat, &beta, spmM, CUDA_R_32F,
+                                    CUSPARSE_SPMM_CSR_ALG1, dBuffer));
+
+        // host get spmM result
+        CHECK_CUDA(cudaMemcpy(spmm, dspmM_dnValues, (csrRowoffsetsLength - 1) * batchSize * sizeof(float), cudaMemcpyDeviceToHost));
+
+        // host result max
+        for (int s = 0; s < batchSize; ++s) {
+
+            if (i + s >= sILength) {
+                break;
+            }
+
+            int currentCol = s * (csrRowoffsetsLength - 1);
+            std::vector<float> values(csrRowoffsetsLength - 1, 0.0);
+            for (int j = 0; j < csrRowoffsetsLength - 1; ++j) {
+                values[j] = spmm[currentCol + j];
+            }
+
+            std::vector<int> idx(csrRowoffsetsLength - 1);
+            std::iota(idx.begin(), idx.end(), 0);
+            std::sort(idx.begin(), idx.end(), [&](int i, int j) {return values[i] > values[j];});
+
+            if (idx.size() >= n) {
+                for (int j = 0; j < n; ++j) {
+                    result[(i + s) * n + j] = idx[j];
+                }
+            }
+        }
+
+        // host memory deallocation
+        delete[] spmm;
+        delete[] M;
+
+        // device destroy descriptors
+        CHECK_CUSPARSE(cusparseDestroyDnMat(Mat));
+        CHECK_CUSPARSE(cusparseDestroyDnMat(spmM));
+
+        if (verbose != 0 && (i + batchSize) % verbose == 0) {
+            std::cout << "Searched " << i + batchSize << " spectra in total..." << std::endl;
+        }
+    }
+
+    // device destroy descriptors
+    CHECK_CUSPARSE(cusparseDestroySpMat(mat));
+    CHECK_CUSPARSE(cusparseDestroy(handle));
+
+    // device memory deallocation
+    CHECK_CUDA(cudaFree(dm_csrRowoffsets));
+    CHECK_CUDA(cudaFree(dm_csrColIdx));
+    CHECK_CUDA(cudaFree(dm_csrValues));
+    CHECK_CUDA(cudaFree(dM_dnValues));
+    CHECK_CUDA(cudaFree(dspmM_dnValues));
+    CHECK_CUDA(cudaFree(dBuffer));
 
     // host memory deallocation
     delete[] csrValues;

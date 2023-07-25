@@ -43,12 +43,17 @@ namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
             // call subroutine for specified mode
             if (mode == "Cuda")
             {
-                var status = Cuda(nrCandidates, nrSpectra, topN, r, false);
+                var status = Cuda(nrCandidates, nrSpectra, topN, r, false, 1);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
             }
             else if (mode == "CudaB")
             {
-                var status = Cuda(nrCandidates, nrSpectra, topN, r, true);
+                var status = Cuda(nrCandidates, nrSpectra, topN, r, true, 1);
+                Console.WriteLine($"Cuda routine exited with status: {status}");
+            }
+            else if (mode == "CudaBAlt")
+            {
+                var status = Cuda(nrCandidates, nrSpectra, topN, r, true, 2);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
             }
             else if (mode == "Eigen")
