@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace FHOOE_IMP.MS_Annika.Utils.NonCleavableSearch
+namespace CandidateVectorSearch
 {
     public partial class DataLoader
     {
