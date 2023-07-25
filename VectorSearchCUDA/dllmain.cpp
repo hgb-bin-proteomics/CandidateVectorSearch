@@ -11,7 +11,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 3;
-const int versionFix = 4;
+const int versionFix = 5;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -262,7 +262,7 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
         throw std::invalid_argument("Cannot return more hits than number of candidates!");
     }
 
-    std::cout << "Running CUDA matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running CUDA sparse matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
 
     float t = round(tolerance * MASS_MULTIPLIER);
     int* result = new int[sILength * n];
@@ -461,6 +461,11 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
                 }
             }
         }
+
+        // host memory deallocation
+        delete[] spgemM_csrRowoffsets;
+        delete[] spgemM_csrColIdx;
+        delete[] spgemM_csrValues;
 
         // device destroy descriptors
         CHECK_CUSPARSE(cusparseDestroySpMat(Mat));
