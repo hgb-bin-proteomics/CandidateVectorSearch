@@ -28,7 +28,7 @@ namespace CandidateVectorSearch
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemory(IntPtr result);
 
-        public static int Eigen(int nrCandidates, int nrSpectra, int topN, Random r, bool batched)
+        public static int Eigen(int nrCandidates, int nrSpectra, int topN, int batchSize, Random r, bool batched)
         {
             // generate candidate vectors
             var candidateValues = new int[nrCandidates * 100];
@@ -123,7 +123,7 @@ namespace CandidateVectorSearch
                                                              spectraValues.Length, spectraIdx.Length,
                                                              topN, (float) 0.02,
                                                              NORMALIZE, USE_GAUSSIAN,
-                                                             BATCH_SIZE,
+                                                             batchSize,
                                                              1000);
 
                     Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);

@@ -10,7 +10,6 @@ namespace CandidateVectorSearch
         const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
         const bool NORMALIZE = true;
         const bool USE_GAUSSIAN = true;
-        const int BATCH_SIZE = 100;
 
         public static void Main(string[] args)
         {
@@ -19,6 +18,7 @@ namespace CandidateVectorSearch
             var nrCandidates = 5000000;
             var nrSpectra = 199;
             var topN = 20;
+            var batchSize = 100;
             var seed = 1337;
             var r = new Random(seed);
 
@@ -39,36 +39,40 @@ namespace CandidateVectorSearch
             {
                 topN = int.Parse(args[3]);
             }
+            if (args.Length > 4)
+            {
+                batchSize = int.Parse(args[4]);
+            }
 
             // call subroutine for specified mode
             if (mode == "Cuda")
             {
-                var status = Cuda(nrCandidates, nrSpectra, topN, r, false, 1);
+                var status = Cuda(nrCandidates, nrSpectra, topN, batchSize, r, false, 1);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
             }
             else if (mode == "CudaB")
             {
-                var status = Cuda(nrCandidates, nrSpectra, topN, r, true, 1);
+                var status = Cuda(nrCandidates, nrSpectra, topN, batchSize, r, true, 1);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
             }
             else if (mode == "CudaBAlt")
             {
-                var status = Cuda(nrCandidates, nrSpectra, topN, r, true, 2);
+                var status = Cuda(nrCandidates, nrSpectra, topN, batchSize, r, true, 2);
                 Console.WriteLine($"Cuda routine exited with status: {status}");
             }
             else if (mode == "Eigen")
             {
-                var status = Eigen(nrCandidates, nrSpectra, topN, r, false);
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, false);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
             else if (mode == "EigenB")
             {
-                var status = Eigen(nrCandidates, nrSpectra, topN, r, true);
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, true);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
             else if (mode == "Compare")
             {
-                var status = Compare(nrCandidates, nrSpectra, topN, r);
+                var status = Compare(nrCandidates, nrSpectra, topN, batchSize, r);
                 Console.WriteLine($"Compare routine exited with status: {status}");
             }
             else if (mode == "CompareD")

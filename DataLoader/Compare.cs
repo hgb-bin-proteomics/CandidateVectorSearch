@@ -5,7 +5,7 @@ namespace CandidateVectorSearch
 {
     public partial class DataLoader
     {
-        public static int Compare(int nrCandidates, int nrSpectra, int topN, Random r)
+        public static int Compare(int nrCandidates, int nrSpectra, int topN, int batchSize, Random r)
         {
             // generate candidate vectors
             var candidateValues = new int[nrCandidates * 100];
@@ -105,7 +105,7 @@ namespace CandidateVectorSearch
 
                 IntPtr resultEigenB = findTopCandidatesBatched(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                                candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                               topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, BATCH_SIZE, 0);
+                                                               topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0);
 
                 Marshal.Copy(resultEigenB, resultArrayEigenB, 0, spectraIdx.Length * topN);
 
@@ -133,7 +133,7 @@ namespace CandidateVectorSearch
                                                                   sValuesPtr, sIdxPtr,
                                                                   csrRowoffsets.Length, csrIdx.Length,
                                                                   spectraValues.Length, spectraIdx.Length,
-                                                                  topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, BATCH_SIZE, 0);
+                                                                  topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0);
 
                 Marshal.Copy(resultCudaB, resultArrayCudaB, 0, spectraIdx.Length * topN);
 
@@ -147,7 +147,7 @@ namespace CandidateVectorSearch
                                                                     sValuesPtr, sIdxPtr,
                                                                     csrRowoffsets.Length, csrIdx.Length,
                                                                     spectraValues.Length, spectraIdx.Length,
-                                                                    topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, BATCH_SIZE, 0);
+                                                                    topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0);
 
                 Marshal.Copy(resultCudaB2, resultArrayCudaB2, 0, spectraIdx.Length * topN);
 
