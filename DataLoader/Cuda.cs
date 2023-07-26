@@ -38,7 +38,7 @@ namespace CandidateVectorSearch
         [DllImport(dllCuda, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemoryCuda(IntPtr result);
 
-        public static int Cuda(int nrCandidates, int nrSpectra, int topN, Random r, bool batched, int batchMode)
+        public static int Cuda(int nrCandidates, int nrSpectra, int topN, int batchSize, Random r, bool batched, int batchMode)
         {
             // generate candidate vectors
             var csrRowoffsets = new int[nrCandidates + 1];
@@ -142,7 +142,7 @@ namespace CandidateVectorSearch
                                                                       spectraValues.Length, spectraIdx.Length,
                                                                       topN, (float) 0.02,
                                                                       NORMALIZE, USE_GAUSSIAN,
-                                                                      BATCH_SIZE,
+                                                                      batchSize,
                                                                       1000);
 
                         Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
@@ -162,7 +162,7 @@ namespace CandidateVectorSearch
                                                                      spectraValues.Length, spectraIdx.Length,
                                                                      topN, (float) 0.02,
                                                                      NORMALIZE, USE_GAUSSIAN,
-                                                                     BATCH_SIZE,
+                                                                     batchSize,
                                                                      1000);
 
                         Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
