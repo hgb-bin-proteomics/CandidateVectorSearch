@@ -11,7 +11,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 4;
-const int versionFix = 5;
+const int versionFix = 6;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -19,6 +19,9 @@ const int versionFix = 5;
 #else
 #define EXPORT __declspec(dllimport)
 #endif
+
+#define CHECK_CUDA(status) { checkCuda(status, __LINE__); }
+#define CHECK_CUSPARSE(status) { checkCusparse(status, __LINE__); }
 
 const int MASS_RANGE = 1300;
 const int MASS_MULTIPLIER = 100;
@@ -59,24 +62,24 @@ float squared(float);
 float normpdf(float, float, float);
 int getRowIdx(int*, int, int);
 
-int CHECK_CUDA(cudaError_t);
-int CHECK_CUSPARSE(cusparseStatus_t);
+int checkCuda(cudaError_t, int line);
+int checkCusparse(cusparseStatus_t, int line);
 
-int CHECK_CUDA(cudaError_t status)
+int checkCuda(cudaError_t status, int line)
 {
     if (status != cudaSuccess) {
         printf("CUDA API failed at line %d with error: %s (%d)\n",
-            __LINE__, cudaGetErrorString(status), status);
+            line, cudaGetErrorString(status), status);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
 
-int CHECK_CUSPARSE(cusparseStatus_t status)
+int checkCusparse(cusparseStatus_t status, int line)
 {
     if (status != CUSPARSE_STATUS_SUCCESS) {
         printf("CUSPARSE API failed at line %d with error: %s (%d)\n",
-            __LINE__, cusparseGetErrorString(status), status);
+            line, cusparseGetErrorString(status), status);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -759,9 +762,6 @@ float normpdf(float x, float mu, float sigma) {
 /// <returns>Associated row index (int) or throws an error if the row index could not be found.</returns>
 int getRowIdx(int* csrRowoffsets, int csrRowoffsetsLength, int colIdxPos) {
     for (int i = 0; i < csrRowoffsetsLength - 1; ++i) {
-        if (csrRowoffsets[i] == csrRowoffsets[i + 1]) {
-            continue;
-        }
         if (csrRowoffsets[i + 1] > colIdxPos) {
             return i;
         }
