@@ -3,10 +3,10 @@
 Searching for candidates using sparse matrix + [sparse] vector/matrix multiplication.
 
 Implements the following methods across two DLLs:
-- VectorSearch.dll:
+- [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp):
   - findTopCandidates: sparse matrix - sparse vector multiplication using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidatesBatched: sparse matrix - sparse matrix multiplication using [Eigen](https://eigen.tuxfamily.org/).
-- VectorSearchCUDA.dll:
+- [VectorSearchCUDA.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchCUDA/dllmain.cpp):
   - findTopCandidates: sparse matrix - dense vector multiplication using [CUDA](https://developer.nvidia.com/cuda-toolkit) ([SpMV](https://docs.nvidia.com/cuda/cusparse/index.html#cusparsespmv)).
   - findTopCandidatesBatched: sparse matrix - sparse matrix multiplication using [CUDA](https://developer.nvidia.com/cuda-toolkit) ([SpGEMM](https://docs.nvidia.com/cuda/cusparse/index.html#cusparsespgemm)).
   - findTopCandidatesBatched2: sparse matrix - dense matrix multiplication using [CUDA](https://developer.nvidia.com/cuda-toolkit) ([SpMM](https://docs.nvidia.com/cuda/cusparse/index.html#cusparsespmm)).
@@ -14,6 +14,12 @@ Implements the following methods across two DLLs:
 VectorSearch.dll implements functions that run on the CPU, while VectorSearchCUDA.dll implements functions that run on a [NVIDIA GPU](https://www.nvidia.com/) using [CUDA](https://developer.nvidia.com/cuda-toolkit) (version [12.2.0_536.25_windows](https://developer.nvidia.com/cuda-toolkit-archive)).
 
 Which functions should be used depends on the problem size and the available hardware. A recommendation is depicted at the figure at the bottom.
+
+## Documentation
+
+Functions are documented within the source code:
+- [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp)
+- [VectorSearchCUDA.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchCUDA/dllmain.cpp)
 
 ## Benchmarks
 
