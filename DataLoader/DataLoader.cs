@@ -62,12 +62,22 @@ namespace CandidateVectorSearch
             }
             else if (mode == "Eigen")
             {
-                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, false);
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, false, false);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
             else if (mode == "EigenB")
             {
-                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, true);
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, true, false);
+                Console.WriteLine($"Eigen routine exited with status: {status}");
+            }
+            else if (mode == "EigenS")
+            {
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, false, true);
+                Console.WriteLine($"Eigen routine exited with status: {status}");
+            }
+            else if (mode == "EigenSB")
+            {
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, true, true);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
             else if (mode == "Compare")
@@ -82,7 +92,7 @@ namespace CandidateVectorSearch
             }
             else
             {
-                Console.WriteLine("No mode selected, has to be one of: Eigen, EigenB, Cuda, Compare.");
+                Console.WriteLine("No mode selected, has to be one of: Eigen(S), Eigen(S)B, Cuda, Compare.");
             }
            
             Console.WriteLine("Done!");
