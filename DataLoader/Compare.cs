@@ -75,7 +75,9 @@ namespace CandidateVectorSearch
             var sValuesLoc = GCHandle.Alloc(spectraValues, GCHandleType.Pinned);
             var sIdxLoc = GCHandle.Alloc(spectraIdx, GCHandleType.Pinned);
             var resultArrayEigen = new int[spectraIdx.Length * topN];
+            var resultArrayEigen2 = new int[spectraIdx.Length * topN];
             var resultArrayEigenB = new int[spectraIdx.Length * topN];
+            var resultArrayEigenB2 = new int[spectraIdx.Length * topN];
             var resultArrayCuda = new int[spectraIdx.Length * topN];
             var resultArrayCudaB = new int[spectraIdx.Length * topN];
             var resultArrayCudaB2 = new int[spectraIdx.Length * topN];
@@ -93,7 +95,7 @@ namespace CandidateVectorSearch
 
                 IntPtr resultEigen = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                        candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                       topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, 0);
+                                                       topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, 0, 0);
 
                 Marshal.Copy(resultEigen, resultArrayEigen, 0, spectraIdx.Length * topN);
 
@@ -103,17 +105,41 @@ namespace CandidateVectorSearch
 
                 var sw2 = Stopwatch.StartNew();
 
+                IntPtr resultEigen2 = findTopCandidates2(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                         candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                                                         topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, 0, 0);
+
+                Marshal.Copy(resultEigen2, resultArrayEigen2, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemory(resultEigen2);
+
+                sw2.Stop();
+
+                var sw3 = Stopwatch.StartNew();
+
                 IntPtr resultEigenB = findTopCandidatesBatched(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                                candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
-                                                               topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0);
+                                                               topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0, 0);
 
                 Marshal.Copy(resultEigenB, resultArrayEigenB, 0, spectraIdx.Length * topN);
 
                 memStat = releaseMemory(resultEigenB);
 
-                sw2.Stop();
+                sw3.Stop();
 
-                var sw3 = Stopwatch.StartNew();
+                var sw4 = Stopwatch.StartNew();
+
+                IntPtr resultEigenB2 = findTopCandidatesBatched2(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                                 candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                                                                 topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0, 0);
+
+                Marshal.Copy(resultEigenB2, resultArrayEigenB2, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemory(resultEigenB2);
+
+                sw4.Stop();/*
+
+                var sw5 = Stopwatch.StartNew();
 
                 IntPtr resultCuda = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr,
                                                           sValuesPtr, sIdxPtr,
@@ -125,9 +151,9 @@ namespace CandidateVectorSearch
 
                 memStat = releaseMemoryCuda(resultCuda);
 
-                sw3.Stop();
+                sw5.Stop();
 
-                var sw4 = Stopwatch.StartNew();
+                var sw6 = Stopwatch.StartNew();
 
                 IntPtr resultCudaB = findTopCandidatesCudaBatched(csrRowoffsetsPtr, csrIdxPtr,
                                                                   sValuesPtr, sIdxPtr,
@@ -139,9 +165,9 @@ namespace CandidateVectorSearch
 
                 memStat = releaseMemoryCuda(resultCudaB);
 
-                sw4.Stop();
+                sw6.Stop();
 
-                var sw5 = Stopwatch.StartNew();
+                var sw7 = Stopwatch.StartNew();
 
                 IntPtr resultCudaB2 = findTopCandidatesCudaBatched2(csrRowoffsetsPtr, csrIdxPtr,
                                                                     sValuesPtr, sIdxPtr,
@@ -153,18 +179,22 @@ namespace CandidateVectorSearch
 
                 memStat = releaseMemoryCuda(resultCudaB2);
 
-                sw5.Stop();
+                sw7.Stop();*/
 
-                Console.WriteLine("Time for candidate search Eigen SpMV:");
+                Console.WriteLine("Time for candidate search Eigen SpM*SpV:");
                 Console.WriteLine(sw1.Elapsed.TotalSeconds.ToString());
-                Console.WriteLine("Time for candidate search Eigen SpMM:");
+                Console.WriteLine("Time for candidate search Eigen SpM*V:");
                 Console.WriteLine(sw2.Elapsed.TotalSeconds.ToString());
-                Console.WriteLine("Time for candidate search Cuda SpMV:");
+                Console.WriteLine("Time for candidate search Eigen SpM*SpM:");
                 Console.WriteLine(sw3.Elapsed.TotalSeconds.ToString());
-                Console.WriteLine("Time for candidate search Cuda SpGEMM:");
+                Console.WriteLine("Time for candidate search Eigen SpM*M:");
                 Console.WriteLine(sw4.Elapsed.TotalSeconds.ToString());
-                Console.WriteLine("Time for candidate search Cuda SpMM:");
+                /*Console.WriteLine("Time for candidate search Cuda SpMV:");
                 Console.WriteLine(sw5.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Cuda SpGEMM:");
+                Console.WriteLine(sw6.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Cuda SpMM:");
+                Console.WriteLine(sw7.Elapsed.TotalSeconds.ToString());*/
             }
             catch (Exception ex)
             {
@@ -186,10 +216,12 @@ namespace CandidateVectorSearch
             for (int i = 0; i < topN; i++)
             {
                 Console.WriteLine(resultArrayEigen[i]);
+                Console.WriteLine(resultArrayEigen2[i]);
                 Console.WriteLine(resultArrayEigenB[i]);
-                Console.WriteLine(resultArrayCuda[i]);
-                Console.WriteLine(resultArrayCudaB[i]);
-                Console.WriteLine(resultArrayCudaB2[i]);
+                Console.WriteLine(resultArrayEigenB2[i]);
+                //Console.WriteLine(resultArrayCuda[i]);
+                //Console.WriteLine(resultArrayCudaB[i]);
+                //Console.WriteLine(resultArrayCudaB2[i]);
                 Console.WriteLine("-----");
             }
 
@@ -198,10 +230,12 @@ namespace CandidateVectorSearch
             for (int i = spectraIdx.Length * topN - topN; i < spectraIdx.Length * topN; i++)
             {
                 Console.WriteLine(resultArrayEigen[i]);
+                Console.WriteLine(resultArrayEigen2[i]);
                 Console.WriteLine(resultArrayEigenB[i]);
-                Console.WriteLine(resultArrayCuda[i]);
-                Console.WriteLine(resultArrayCudaB[i]);
-                Console.WriteLine(resultArrayCudaB2[i]);
+                Console.WriteLine(resultArrayEigenB2[i]);
+                //Console.WriteLine(resultArrayCuda[i]);
+                //Console.WriteLine(resultArrayCudaB[i]);
+                //Console.WriteLine(resultArrayCudaB2[i]);
                 Console.WriteLine("-----");
             }
 
