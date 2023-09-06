@@ -35,7 +35,6 @@ namespace CandidateVectorSearch
                                                         int cores, int verbose);
 
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
-
         private static extern IntPtr findTopCandidatesBatched2(IntPtr cV, IntPtr cI,
                                                                IntPtr sV, IntPtr sI,
                                                                int cVL, int cIL,
