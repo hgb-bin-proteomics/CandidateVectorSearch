@@ -137,7 +137,7 @@ namespace CandidateVectorSearch
 
                 memStat = releaseMemory(resultEigenB2);
 
-                sw4.Stop();/*
+                sw4.Stop();
 
                 var sw5 = Stopwatch.StartNew();
 
@@ -179,7 +179,7 @@ namespace CandidateVectorSearch
 
                 memStat = releaseMemoryCuda(resultCudaB2);
 
-                sw7.Stop();*/
+                sw7.Stop();
 
                 Console.WriteLine("Time for candidate search Eigen SpM*SpV:");
                 Console.WriteLine(sw1.Elapsed.TotalSeconds.ToString());
@@ -189,12 +189,12 @@ namespace CandidateVectorSearch
                 Console.WriteLine(sw3.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*M:");
                 Console.WriteLine(sw4.Elapsed.TotalSeconds.ToString());
-                /*Console.WriteLine("Time for candidate search Cuda SpMV:");
+                Console.WriteLine("Time for candidate search Cuda SpMV:");
                 Console.WriteLine(sw5.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Cuda SpGEMM:");
                 Console.WriteLine(sw6.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Cuda SpMM:");
-                Console.WriteLine(sw7.Elapsed.TotalSeconds.ToString());*/
+                Console.WriteLine(sw7.Elapsed.TotalSeconds.ToString());
             }
             catch (Exception ex)
             {
