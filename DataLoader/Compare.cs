@@ -219,9 +219,9 @@ namespace CandidateVectorSearch
                 Console.WriteLine(resultArrayEigen2[i]);
                 Console.WriteLine(resultArrayEigenB[i]);
                 Console.WriteLine(resultArrayEigenB2[i]);
-                //Console.WriteLine(resultArrayCuda[i]);
-                //Console.WriteLine(resultArrayCudaB[i]);
-                //Console.WriteLine(resultArrayCudaB2[i]);
+                Console.WriteLine(resultArrayCuda[i]);
+                Console.WriteLine(resultArrayCudaB[i]);
+                Console.WriteLine(resultArrayCudaB2[i]);
                 Console.WriteLine("-----");
             }
 
@@ -233,9 +233,9 @@ namespace CandidateVectorSearch
                 Console.WriteLine(resultArrayEigen2[i]);
                 Console.WriteLine(resultArrayEigenB[i]);
                 Console.WriteLine(resultArrayEigenB2[i]);
-                //Console.WriteLine(resultArrayCuda[i]);
-                //Console.WriteLine(resultArrayCudaB[i]);
-                //Console.WriteLine(resultArrayCudaB2[i]);
+                Console.WriteLine(resultArrayCuda[i]);
+                Console.WriteLine(resultArrayCudaB[i]);
+                Console.WriteLine(resultArrayCudaB2[i]);
                 Console.WriteLine("-----");
             }
 
