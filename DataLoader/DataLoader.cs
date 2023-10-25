@@ -5,7 +5,7 @@ namespace CandidateVectorSearch
 {
     public partial class DataLoader
     {
-        const int MASS_RANGE = 1300;
+        const int MASS_RANGE = 5000;
         const int MASS_MULTIPLIER = 100;
         const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
         const bool NORMALIZE = true;

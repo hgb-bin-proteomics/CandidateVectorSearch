@@ -11,7 +11,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 4;
-const int versionFix = 6;
+const int versionFix = 7;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -23,7 +23,7 @@ const int versionFix = 6;
 #define CHECK_CUDA(status) { checkCuda(status, __LINE__); }
 #define CHECK_CUSPARSE(status) { checkCusparse(status, __LINE__); }
 
-const int MASS_RANGE = 1300;
+const int MASS_RANGE = 5000;
 const int MASS_MULTIPLIER = 100;
 const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
 const double ONE_OVER_SQRT_PI = 0.39894228040143267793994605993438;
