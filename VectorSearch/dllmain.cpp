@@ -9,7 +9,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 5;
-const int versionFix = 0;
+const int versionFix = 1;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -18,7 +18,7 @@ const int versionFix = 0;
 #define EXPORT __declspec(dllimport)
 #endif
 
-const int MASS_RANGE = 1300;
+const int MASS_RANGE = 5000;
 const int MASS_MULTIPLIER = 100;
 const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
 const int APPROX_NNZ_PER_ROW = 100;
