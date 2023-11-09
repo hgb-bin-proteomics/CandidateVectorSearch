@@ -76,6 +76,24 @@ namespace VectorSearchInterface
 
         #region CPU_search
 
+        /// <summary>
+        /// Calculates the top n candidates for each spectrum on the CPU using Eigen.
+        /// </summary>
+        /// <param name="candidatesValues">An integer array of theoretical ion m/z values for all candidates flattened.</param>
+        /// <param name="candidatesIdx">An integer array that contains indices indicating where each candidate starts in candidatesValues.</param>
+        /// <param name="spectraValues">An integer array of peak m/z values from experimental spectra flattened.</param>
+        /// <param name="spectraIdx">An integer array that contains indices indicating where each spectrum starts in spectraValues.</param>
+        /// <param name="topN">The number (int) of top candidates that should be returned for each spectrum.</param>
+        /// <param name="tolerance">Tolerance used for matching peaks in Dalton (float).</param>
+        /// <param name="normalize">Whether or not the candidate scores should be normalized by candidate length (bool).</param>
+        /// <param name="useGaussianTol">Whether or not experimental peaks should be modelled as gaussian normal distributions (bool).</param>
+        /// <param name="batched">Whether a batched approach (MM) or not (MV) should be used (bool).</param>
+        /// <param name="batchSize">If a batched approach is used, how big should batches be (integer).</param>
+        /// <param name="useSparse">Whether a sparse approach (SPMV/SPMM) or not (GEMV/GEMM) should be used (bool).</param>
+        /// <param name="cores">The number of CPU cores that should be used for computation (int).</param>
+        /// <param name="verbose">An integer parameter controlling how often progress should be printed to std::out. If 0 no progress will be printed.</param>
+        /// <param name="memStat">An integer out parameter indicating if memory was successfully freed after execution, 0 = success, 1 = error.</param>
+        /// <returns>An integer array with length (number of spectra * topN) containing the indices of the top n candidates for every spectrum.</returns>
         public static int[] searchCPU(ref int[] candidatesValues, ref int[] candidatesIdx, ref int[] spectraValues, ref int[] spectraIdx,
                                       int topN, float tolerance, bool normalize, bool useGaussianTol,
                                       bool batched, int batchSize, bool useSparse, int cores, int verbose,
@@ -172,6 +190,23 @@ namespace VectorSearchInterface
 
         #region GPU_search
 
+        /// <summary>
+        /// Calculates the top n candidates for each spectrum on the (Nvidia) GPU using CUDA.
+        /// </summary>
+        /// <param name="csrRowoffsets">An integer array of rowoffsets of the CSR sparse matrix with length (rows + 1 = number of candidates + 1).</param>
+        /// <param name="csrColIdx">An integer array of column indices of the CSR sparse matrix with length (NNZ = total number of theoretical ions).</param>
+        /// <param name="spectraValues">An integer array of peak m/z values from experimental spectra flattened.</param>
+        /// <param name="spectraIdx">An integer array that contains indices indicating where each spectrum starts in spectraValues.</param>
+        /// <param name="topN">The number (int) of top candidates that should be returned for each spectrum.</param>
+        /// <param name="tolerance">Tolerance used for matching peaks in Dalton (float).</param>
+        /// <param name="normalize">Whether or not the candidate scores should be normalized by candidate length (bool).</param>
+        /// <param name="useGaussianTol">Whether or not experimental peaks should be modelled as gaussian normal distributions (bool).</param>
+        /// <param name="batched">Whether a batched approach (MM) or not (MV) should be used (bool).</param>
+        /// <param name="batchSize">If a batched approach is used, how big should batches be (integer).</param>
+        /// <param name="useSparse">Whether a sparse approach (SPMV/SPMM) or not (GEMV/GEMM) should be used (bool).</param>
+        /// <param name="verbose">An integer parameter controlling how often progress should be printed to std::out. If 0 no progress will be printed.</param>
+        /// <param name="memStat">An integer out parameter indicating if memory was successfully freed after execution, 0 = success, 1 = error.</param>
+        /// <returns>An integer array with length (number of spectra * topN) containing the indices of the top n candidates for every spectrum.</returns>
         public static int[] searchGPU(ref int[] csrRowoffsets, ref int[] csrColIdx, ref int[] spectraValues, ref int[] spectraIdx,
                                       int topN, float tolerance, bool normalize, bool useGaussianTol,
                                       bool batched, int batchSize, bool useSparse, int verbose,
