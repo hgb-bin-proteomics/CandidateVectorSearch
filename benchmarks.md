@@ -1,5 +1,10 @@
 # Benchmarks
 
+- Encoding size: 130 000
+- X: Number of simulated peptide candidates
+- Y: Number of simulated spectra
+- N: Number of simulated ions per peptide candidate
+
 ## System 1
 
 - Intel Core i7-1185G7 [4 cores @ 1.8 GHz base/ 3.0 GHz boost]
