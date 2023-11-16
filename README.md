@@ -1,7 +1,7 @@
 # CandidateVectorSearch
 
 Searching for peptide candidates using sparse matrix + [sparse] vector/matrix multiplication. This is the computational backend for
-[CandidateSearch](https://github.com/hgb-bin-proteomics/CandidateSearch) - a search engine for that aims to identify peptide candidates for
+[CandidateSearch](https://github.com/hgb-bin-proteomics/CandidateSearch) - a search engine that aims to (quickly) identify peptide candidates for
 a given spectra without any information about precursor mass or variable modifications.
 
 Implements the following methods across two DLLs:
@@ -25,9 +25,11 @@ Functions are documented within the source code:
 - [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp)
 - [VectorSearchCUDA.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchCUDA/dllmain.cpp)
 
+A better description of the input arrays is given in [input.md](input.md).
+
 An example usage where functions are called from a C# application is given in
 [here (CPU)](https://github.com/hgb-bin-proteomics/CandidateSearch/blob/master/CandidateSearchCPU.cs)
-and [here(GPU)](https://github.com/hgb-bin-proteomics/CandidateSearch/blob/master/CandidateSearchGPU.cs).
+and [here (GPU)](https://github.com/hgb-bin-proteomics/CandidateSearch/blob/master/CandidateSearchGPU.cs).
 A wrapper for C# is given in [here](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchInterface/VectorSearchAPI.cs).
 
 ## Benchmarks
@@ -41,7 +43,7 @@ See [benchmarks.md](benchmarks.md).
 
 ## Citing
 
-If you are using (parts of) CandidateVectorSearch please cite:
+If you are using [parts of] *CandidateVectorSearch* please cite:
 
 ```
 MS Annika 3.0 (publication wip)
