@@ -2,7 +2,7 @@
 
 Searching for peptide candidates using sparse matrix + [sparse] vector/matrix multiplication. This is the computational backend for
 [CandidateSearch](https://github.com/hgb-bin-proteomics/CandidateSearch) - a search engine that aims to (quickly) identify peptide candidates for
-a given spectra without any information about precursor mass or variable modifications.
+a given mass spectrum without any information about precursor mass or variable modifications.
 
 Implements the following methods across two DLLs:
 - [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp):
