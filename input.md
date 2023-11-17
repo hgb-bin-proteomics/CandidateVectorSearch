@@ -11,6 +11,7 @@ All `findTopCandidates` functions require four integer arrays as input:
   - `csrColIdx`
   - `spectraValues`
   - `spectraIdx`
+
 Note that `spectraValues` and `spectraIdx` is the same for both versions. The
 following should highlight how to get these arrays.
 
@@ -65,7 +66,7 @@ csrRowoffsets = [0, 5, 11]
 
 The `spectraValues` array contains all m/z values of all peaks of all spectra.
 Again the values should be multiplied by 100 and rounded to the nearest integer.
-Peaks with m/z values greater than 5000 should be discarded.
+Peaks with m/z values greater than 5000 should be discarded!
 
 ```python
 spectraValues = [13574, 32133, 53179, 98999]
@@ -75,8 +76,8 @@ spectraValues = [13574, 32133, 53179, 98999]
 ## spectraIdx
 
 The `spectraIdx` array is analogous to the `candidatesIdx` array and contains
-the indices of where every spectrum starts in `spectraValues`. It always
-contains as many elements as there are spectra.
+the indices of where each spectrum starts in `spectraValues`. It always contains
+as many elements as there are spectra.
 
 ```python
 spectraIdx = [0, 4]
