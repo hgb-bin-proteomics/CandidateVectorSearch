@@ -1,6 +1,8 @@
 # CandidateVectorSearch
 
-Searching for candidates using sparse matrix + [sparse] vector/matrix multiplication.
+Searching for peptide candidates using sparse matrix + [sparse] vector/matrix multiplication. This is the computational backend for
+[CandidateSearch](https://github.com/hgb-bin-proteomics/CandidateSearch) - a search engine that aims to (quickly) identify peptide candidates for
+a given mass spectrum without any information about precursor mass or variable modifications.
 
 Implements the following methods across two DLLs:
 - [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp):
@@ -15,13 +17,20 @@ Implements the following methods across two DLLs:
 
 VectorSearch.dll implements functions that run on the CPU, while VectorSearchCUDA.dll implements functions that run on a [NVIDIA GPU](https://www.nvidia.com/) using [CUDA](https://developer.nvidia.com/cuda-toolkit) (version [12.2.0_536.25_windows](https://developer.nvidia.com/cuda-toolkit-archive)).
 
-Which functions should be used depends on the problem size and the available hardware. A recommendation is depicted at the figure at the bottom.
+Which functions should be used depends on the problem size and the available hardware.
 
 ## Documentation
 
 Functions are documented within the source code:
 - [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp)
 - [VectorSearchCUDA.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchCUDA/dllmain.cpp)
+
+A better description of the input arrays is given in [input.md](input.md).
+
+An example usage where functions are called from a C# application is given in
+[here (CPU)](https://github.com/hgb-bin-proteomics/CandidateSearch/blob/master/CandidateSearchCPU.cs)
+and [here (GPU)](https://github.com/hgb-bin-proteomics/CandidateSearch/blob/master/CandidateSearchGPU.cs).
+A wrapper for C# is given in [here](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchInterface/VectorSearchAPI.cs).
 
 ## Benchmarks
 
@@ -32,6 +41,18 @@ See [benchmarks.md](benchmarks.md).
 - This project uses [Eigen](https://eigen.tuxfamily.org/) and [CUDA](https://developer.nvidia.com/cuda-toolkit) to implement sparse linear algebra, [Eigen](https://eigen.tuxfamily.org/) is licensed under [MPL2](https://www.mozilla.org/en-US/MPL/2.0/), and [CUDA](https://developer.nvidia.com/cuda-toolkit) is owned by [NVIDIA Corporation](https://www.nvidia.com/).
 - Special thanks goes to the [Eigen Community Discord](https://discord.gg/2SkEJGqZjR) who helped fixing a bug in the original implementation of `VectorSearch::findTopCandidates`.
 
-## Functions
+## Citing
 
-![Method_Decision_Tree](sparse_alg_decision_tree.png)
+If you are using [parts of] *CandidateVectorSearch* please cite:
+
+```
+MS Annika 3.0 (publication wip)
+```
+
+## License
+
+- [MIT](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/LICENSE)
+
+## Contact
+
+[micha.birklbauer@fh-hagenberg.at](mailto:micha.birklbauer@fh-hagenberg.at)
