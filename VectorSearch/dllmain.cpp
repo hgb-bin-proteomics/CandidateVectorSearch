@@ -375,9 +375,9 @@ int* findTopCandidates2Int(int* candidatesValues, int* candidatesIdx,
             auto maxPeak = currentPeak + t < ENCODING_SIZE ? currentPeak + t : ENCODING_SIZE - 1;
 
             for (int k = minPeak; k <= maxPeak; ++k) {
-                float currentVal = v->coeffRef(k);
-                float newVal = gaussianTol ? normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) : 1.0;
-                v->coeffRef(k) = (int) round(max(currentVal, newVal) * (float) ROUNDING_ACCURACY);
+                int currentVal = v->coeffRef(k);
+                int newVal = gaussianTol ? (int) round(normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) * (float) ROUNDING_ACCURACY) : 1;
+                v->coeffRef(k) = max(currentVal, newVal);
             }
         }
 
@@ -766,9 +766,9 @@ int* findTopCandidatesBatched2Int(int* candidatesValues, int* candidatesIdx,
                 auto maxPeak = currentPeak + t < ENCODING_SIZE ? currentPeak + t : ENCODING_SIZE - 1;
 
                 for (int k = minPeak; k <= maxPeak; ++k) {
-                    float currentVal = M->coeff(k, s);
-                    float newVal = gaussianTol ? normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) : 1.0;
-                    M->coeffRef(k, s) = (int) round(max(currentVal, newVal) * (float) ROUNDING_ACCURACY);
+                    int currentVal = M->coeff(k, s);
+                    int newVal = gaussianTol ? (int) round(normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) * (float) ROUNDING_ACCURACY) : 1;
+                    M->coeffRef(k, s) = max(currentVal, newVal);
                 }
             }
         }
