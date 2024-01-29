@@ -18,11 +18,11 @@ const int versionFix = 0;
 #define EXPORT __declspec(dllimport)
 #endif
 
-const int MASS_RANGE = 5000;
-const int MASS_MULTIPLIER = 100;
-const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
-const int APPROX_NNZ_PER_ROW = 100;
-const int ROUNDING_ACCURACY = 1000;
+const int MASS_RANGE = 5000;                                // Encoding values up to 5000 m/z
+const int MASS_MULTIPLIER = 100;                            // Encoding values with 0.01 precision
+const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;     // The total length of an encoding vector
+const int APPROX_NNZ_PER_ROW = 100;                         // Approximate number of ions assumed
+const int ROUNDING_ACCURACY = 1000;                         // Rounding precision for converting f32 to i32, the exact precision is (int) round(val * 1000.0f)
 const double ONE_OVER_SQRT_PI = 0.39894228040143267793994605993438;
 
 extern "C" {
