@@ -352,9 +352,9 @@ int* findTopCandidates2Int(int* candidatesValues, int* candidatesIdx,
         int startIter = candidatesIdx[i];
         int endIter = i + 1 == cILength ? cVLength : candidatesIdx[i + 1];
         int nrNonZero = endIter - startIter;
-        float val = normalize ? 1.0 / (float) nrNonZero : 1.0;
+        float val = normalize ? (int) round((float) ROUNDING_ACCURACY / (float) nrNonZero) : ROUNDING_ACCURACY;
         for (int j = startIter; j < endIter; ++j) {
-            m->insert(currentRow, candidatesValues[j]) = (int) round(val * (float) ROUNDING_ACCURACY);
+            m->insert(currentRow, candidatesValues[j]) = val;
         }
         ++currentRow;
     }
@@ -735,9 +735,9 @@ int* findTopCandidatesBatched2Int(int* candidatesValues, int* candidatesIdx,
         int startIter = candidatesIdx[i];
         int endIter = i + 1 == cILength ? cVLength : candidatesIdx[i + 1];
         int nrNonZero = endIter - startIter;
-        float val = normalize ? 1.0 / (float) nrNonZero : 1.0;
+        int val = normalize ? (int) round((float) ROUNDING_ACCURACY / (float) nrNonZero) : ROUNDING_ACCURACY;
         for (int j = startIter; j < endIter; ++j) {
-            m->insert(currentRow, candidatesValues[j]) = (int) round(val * (float) ROUNDING_ACCURACY);
+            m->insert(currentRow, candidatesValues[j]) = val;
         }
         ++currentRow;
     }
