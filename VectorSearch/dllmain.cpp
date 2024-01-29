@@ -117,7 +117,7 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
 
-    std::cout << "Running Eigen sparse vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running Eigen f32 sparse vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
     std::cout << "Using " << usedCores << " threads in total." << std::endl;
 
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
@@ -227,7 +227,7 @@ int* findTopCandidates2(int* candidatesValues, int* candidatesIdx,
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
 
-    std::cout << "Running Eigen dense vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running Eigen f32 dense vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
     std::cout << "Using " << usedCores << " threads in total." << std::endl;
 
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
@@ -341,7 +341,7 @@ int* findTopCandidates2Int(int* candidatesValues, int* candidatesIdx,
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
 
-    std::cout << "Running Eigen dense vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running Eigen i32 dense vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
     std::cout << "Using " << usedCores << " threads in total." << std::endl;
 
     auto* m = new Eigen::SparseMatrix<int, Eigen::RowMajor>(cILength, ENCODING_SIZE);
@@ -453,7 +453,7 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
 
-    std::cout << "Running Eigen sparse matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running Eigen f32 sparse matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
     std::cout << "Using " << usedCores << " threads in total." << std::endl;
 
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
@@ -592,7 +592,7 @@ int* findTopCandidatesBatched2(int* candidatesValues, int* candidatesIdx,
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
 
-    std::cout << "Running Eigen dense matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running Eigen f32 dense matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
     std::cout << "Using " << usedCores << " threads in total." << std::endl;
 
     auto* m = new Eigen::SparseMatrix<float, Eigen::RowMajor>(cILength, ENCODING_SIZE);
@@ -724,7 +724,7 @@ int* findTopCandidatesBatched2Int(int* candidatesValues, int* candidatesIdx,
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
 
-    std::cout << "Running Eigen dense matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running Eigen i32 dense matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
     std::cout << "Using " << usedCores << " threads in total." << std::endl;
 
     auto* m = new Eigen::SparseMatrix<int, Eigen::RowMajor>(cILength, ENCODING_SIZE);
