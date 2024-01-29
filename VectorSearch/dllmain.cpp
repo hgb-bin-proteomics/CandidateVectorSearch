@@ -109,6 +109,10 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
                        bool normalize, bool gaussianTol,
                        int cores, int verbose) {
 
+    if (n > cILength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
+
     int usedCores = 0;
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
@@ -215,6 +219,10 @@ int* findTopCandidates2(int* candidatesValues, int* candidatesIdx,
                         bool normalize, bool gaussianTol,
                         int cores, int verbose) {
 
+    if (n > cILength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
+
     int usedCores = 0;
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
@@ -320,6 +328,10 @@ int* findTopCandidates2Int(int* candidatesValues, int* candidatesIdx,
                            int n, float tolerance,
                            bool normalize, bool gaussianTol,
                            int cores, int verbose) {
+
+    if (n > cILength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
 
     if (tolerance < 0.01f) {
         throw std::invalid_argument("Tolerance must not be smaller than 0.01 for i32 operations!");
@@ -432,6 +444,10 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
                               bool normalize, bool gaussianTol,
                               int batchSize,
                               int cores, int verbose) {
+
+    if (n > cILength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
 
     int usedCores = 0;
     Eigen::setNbThreads(cores);
@@ -568,6 +584,10 @@ int* findTopCandidatesBatched2(int* candidatesValues, int* candidatesIdx,
                                int batchSize,
                                int cores, int verbose) {
 
+    if (n > cILength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
+
     int usedCores = 0;
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
@@ -691,6 +711,10 @@ int* findTopCandidatesBatched2Int(int* candidatesValues, int* candidatesIdx,
                                   bool normalize, bool gaussianTol,
                                   int batchSize,
                                   int cores, int verbose) {
+
+    if (n > cILength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
 
     if (tolerance < 0.01f) {
         throw std::invalid_argument("Tolerance must not be smaller than 0.01 for i32 operations!");
