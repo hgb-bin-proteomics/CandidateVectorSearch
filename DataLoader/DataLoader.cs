@@ -19,8 +19,8 @@ namespace CandidateVectorSearch
             var nrSpectra = 199;
             var topN = 20;
             var batchSize = 100;
-            var seed = 1337;
-            var r = new Random(seed);
+            //var seed = 1337;
+            var r = new Random(); //new Random(seed);
 
             // parse arguments
             if (args.Length > 0)
@@ -65,9 +65,19 @@ namespace CandidateVectorSearch
                 var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, false, false);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
+            else if (mode == "EigenInt")
+            {
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, false, false, true);
+                Console.WriteLine($"Eigen routine exited with status: {status}");
+            }
             else if (mode == "EigenB")
             {
                 var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, true, false);
+                Console.WriteLine($"Eigen routine exited with status: {status}");
+            }
+            else if (mode == "EigenIntB")
+            {
+                var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, true, false, true);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
             }
             else if (mode == "EigenS")
@@ -79,6 +89,11 @@ namespace CandidateVectorSearch
             {
                 var status = Eigen(nrCandidates, nrSpectra, topN, batchSize, r, true, true);
                 Console.WriteLine($"Eigen routine exited with status: {status}");
+            }
+            else if (mode == "Benchmark")
+            {
+                var status = Benchmark(nrCandidates, nrSpectra, topN, batchSize, r);
+                Console.WriteLine($"Compare routine exited with status: {status}");
             }
             else if (mode == "Compare")
             {
@@ -92,7 +107,7 @@ namespace CandidateVectorSearch
             }
             else
             {
-                Console.WriteLine("No mode selected, has to be one of: Eigen(S), Eigen(S)B, Cuda, Compare.");
+                Console.WriteLine("No mode selected, has to be one of: Eigen(S/Int), Eigen(S/Int)B, Cuda(B/BAlt), Compare, Benchmark.");
             }
            
             Console.WriteLine("Done!");
