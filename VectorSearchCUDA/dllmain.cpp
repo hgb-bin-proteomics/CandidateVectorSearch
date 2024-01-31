@@ -10,8 +10,8 @@
 #include <vector>
 
 const int versionMajor = 1;
-const int versionMinor = 5;
-const int versionFix = 0;
+const int versionMinor = 4;
+const int versionFix = 8;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -196,12 +196,12 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx,
         CHECK_CUSPARSE(cusparseSpMV_bufferSize(handle,
                                                CUSPARSE_OPERATION_NON_TRANSPOSE,
                                                &alpha, mat, vec, &beta, res,
-                                               CUDA_R_32F, CUSPARSE_SPMV_ALG_DEFAULT, &bufferSize));
+                                               CUDA_R_32F, CUSPARSE_SPMV_CSR_ALG1, &bufferSize));
         CHECK_CUDA(cudaMalloc(&dBuffer, bufferSize));
         CHECK_CUSPARSE(cusparseSpMV(handle,
                                     CUSPARSE_OPERATION_NON_TRANSPOSE,
                                     &alpha, mat, vec, &beta, res,
-                                    CUDA_R_32F, CUSPARSE_SPMV_ALG_DEFAULT, dBuffer));
+                                    CUDA_R_32F, CUSPARSE_SPMV_CSR_ALG1, dBuffer));
 
         CHECK_CUDA(cudaMemcpy(MVresult, dMVresult, (csrRowoffsetsLength - 1) * sizeof(float), cudaMemcpyDeviceToHost));
         CHECK_CUSPARSE(cusparseDestroyDnVec(vec));
