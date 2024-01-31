@@ -76,8 +76,10 @@ namespace CandidateVectorSearch
             var sIdxLoc = GCHandle.Alloc(spectraIdx, GCHandleType.Pinned);
             var resultArrayEigen = new int[spectraIdx.Length * topN];
             var resultArrayEigen2 = new int[spectraIdx.Length * topN];
+            var resultArrayEigen2Int = new int[spectraIdx.Length * topN];
             var resultArrayEigenB = new int[spectraIdx.Length * topN];
             var resultArrayEigenB2 = new int[spectraIdx.Length * topN];
+            var resultArrayEigenB2Int = new int[spectraIdx.Length * topN];
             var resultArrayCuda = new int[spectraIdx.Length * topN];
             var resultArrayCudaB = new int[spectraIdx.Length * topN];
             var resultArrayCudaB2 = new int[spectraIdx.Length * topN];
@@ -115,6 +117,18 @@ namespace CandidateVectorSearch
 
                 sw2.Stop();
 
+                var sw2Int = Stopwatch.StartNew();
+
+                IntPtr resultEigen2Int = findTopCandidates2Int(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                               candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                                                               topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, 0, 0);
+
+                Marshal.Copy(resultEigen2Int, resultArrayEigen2Int, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemory(resultEigen2Int);
+
+                sw2Int.Stop();
+
                 var sw3 = Stopwatch.StartNew();
 
                 IntPtr resultEigenB = findTopCandidatesBatched(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
@@ -138,6 +152,18 @@ namespace CandidateVectorSearch
                 memStat = releaseMemory(resultEigenB2);
 
                 sw4.Stop();
+
+                var sw4Int = Stopwatch.StartNew();
+
+                IntPtr resultEigenB2Int = findTopCandidatesBatched2Int(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                                       candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                                                                       topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0, 0);
+
+                Marshal.Copy(resultEigenB2Int, resultArrayEigenB2Int, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemory(resultEigenB2Int);
+
+                sw4Int.Stop();
 
                 var sw5 = Stopwatch.StartNew();
 
@@ -185,10 +211,14 @@ namespace CandidateVectorSearch
                 Console.WriteLine(sw1.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*V:");
                 Console.WriteLine(sw2.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Eigen SpM*V (int):");
+                Console.WriteLine(sw2Int.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*SpM:");
                 Console.WriteLine(sw3.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*M:");
                 Console.WriteLine(sw4.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Eigen SpM*M (int):");
+                Console.WriteLine(sw4Int.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Cuda SpMV:");
                 Console.WriteLine(sw5.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Cuda SpGEMM:");
@@ -215,13 +245,15 @@ namespace CandidateVectorSearch
 
             for (int i = 0; i < topN; i++)
             {
-                Console.WriteLine(resultArrayEigen[i]);
-                Console.WriteLine(resultArrayEigen2[i]);
-                Console.WriteLine(resultArrayEigenB[i]);
-                Console.WriteLine(resultArrayEigenB2[i]);
-                Console.WriteLine(resultArrayCuda[i]);
-                Console.WriteLine(resultArrayCudaB[i]);
-                Console.WriteLine(resultArrayCudaB2[i]);
+                Console.WriteLine($"eSpVf32: {resultArrayEigen[i]}");
+                Console.WriteLine($"eDnVf32: {resultArrayEigen2[i]}");
+                Console.WriteLine($"eDnVi32: {resultArrayEigen2Int[i]}");
+                Console.WriteLine($"eSpMf32: {resultArrayEigenB[i]}");
+                Console.WriteLine($"eDnMf32: {resultArrayEigenB2[i]}");
+                Console.WriteLine($"eDnMi32: {resultArrayEigenB2Int[i]}");
+                Console.WriteLine($"cDnVf32: {resultArrayCuda[i]}");
+                Console.WriteLine($"cSpMf32: {resultArrayCudaB[i]}");
+                Console.WriteLine($"cDnMf32: {resultArrayCudaB2[i]}");
                 Console.WriteLine("-----");
             }
 
@@ -229,13 +261,15 @@ namespace CandidateVectorSearch
 
             for (int i = spectraIdx.Length * topN - topN; i < spectraIdx.Length * topN; i++)
             {
-                Console.WriteLine(resultArrayEigen[i]);
-                Console.WriteLine(resultArrayEigen2[i]);
-                Console.WriteLine(resultArrayEigenB[i]);
-                Console.WriteLine(resultArrayEigenB2[i]);
-                Console.WriteLine(resultArrayCuda[i]);
-                Console.WriteLine(resultArrayCudaB[i]);
-                Console.WriteLine(resultArrayCudaB2[i]);
+                Console.WriteLine($"eSpVf32: {resultArrayEigen[i]}");
+                Console.WriteLine($"eDnVf32: {resultArrayEigen2[i]}");
+                Console.WriteLine($"eDnVi32: {resultArrayEigen2Int[i]}");
+                Console.WriteLine($"eSpMf32: {resultArrayEigenB[i]}");
+                Console.WriteLine($"eDnMf32: {resultArrayEigenB2[i]}");
+                Console.WriteLine($"eDnMi32: {resultArrayEigenB2Int[i]}");
+                Console.WriteLine($"cDnVf32: {resultArrayCuda[i]}");
+                Console.WriteLine($"cSpMf32: {resultArrayCudaB[i]}");
+                Console.WriteLine($"cDnMf32: {resultArrayCudaB2[i]}");
                 Console.WriteLine("-----");
             }
 
