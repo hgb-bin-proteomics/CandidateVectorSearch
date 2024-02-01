@@ -7,6 +7,46 @@ namespace VectorSearchInterface
         const string dllCPU = @"VectorSearch.dll";
         const string dllGPU = @"VectorSearchCUDA.dll";
 
+        #region CPU_Methods
+
+        /// <summary>
+        /// Enum of available computation methods on the CPU:
+        /// - i32CPU_DV: Sparse matrix - dense vector multiplication using integer operations.
+        /// - f32CPU_DV: Sparse matrix - dense vector multiplication using float operations.
+        /// - i32CPU_DM: Sparse matrix - dense matrix multiplication using integer operations.
+        /// - f32CPU_DM: Sparse matrix - dense matrix multiplication using float operations.
+        /// - f32CPU_SV: Sparse matrix - sparse vector multiplication using float operations.
+        /// - f32CPU_SM: Sparse matrix - sparse matrix multiplication using float operations.
+        /// </summary>
+        public enum CPU_METHODS
+        {
+            i32CPU_DV,
+            f32CPU_DV,
+            i32CPU_DM,
+            f32CPU_DM,
+            f32CPU_SV,
+            f32CPU_SM
+        }
+
+        #endregion
+
+        #region GPU_Methods
+
+        /// <summary>
+        /// Enum of available computation methods on the GPU:
+        /// - f32GPU_DV: Sparse matrix - dense vector multiplication using float operations.
+        /// - f32GPU_DM: Sparse matrix - dense matrix multiplication using float operations.
+        /// - f32GPU_SM: Sparse matrix - sparse matrix multiplication using float operations.
+        /// </summary>
+        public enum GPU_METHODS
+        {
+            f32GPU_DV,
+            f32GPU_DM,
+            f32GPU_SM
+        }
+
+        #endregion
+
         #region VectorSearch.dll_import
 
         [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
@@ -32,12 +72,27 @@ namespace VectorSearchInterface
                                                         int cores, int verbose);
 
         [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidates2Int(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
+                                                           int cVL, int cIL, int sVL, int sIL,
+                                                           int n, float tolerance,
+                                                           bool normalize, bool gaussianTol,
+                                                           int cores, int verbose);
+
+        [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr findTopCandidatesBatched2(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
                                                                int cVL, int cIL, int sVL, int sIL,
                                                                int n, float tolerance,
                                                                bool normalize, bool gaussianTol,
                                                                int batchSize,
                                                                int cores, int verbose);
+
+        [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidatesBatched2Int(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
+                                                                  int cVL, int cIL, int sVL, int sIL,
+                                                                  int n, float tolerance,
+                                                                  bool normalize, bool gaussianTol,
+                                                                  int batchSize,
+                                                                  int cores, int verbose);
 
         [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemory(IntPtr result);
@@ -87,16 +142,15 @@ namespace VectorSearchInterface
         /// <param name="tolerance">Tolerance used for matching peaks in Dalton (float).</param>
         /// <param name="normalize">Whether or not the candidate scores should be normalized by candidate length (bool).</param>
         /// <param name="useGaussianTol">Whether or not experimental peaks should be modelled as gaussian normal distributions (bool).</param>
-        /// <param name="batched">Whether a batched approach (MM) or not (MV) should be used (bool).</param>
         /// <param name="batchSize">If a batched approach is used, how big should batches be (integer).</param>
-        /// <param name="useSparse">Whether a sparse approach (SPMV/SPMM) or not (GEMV/GEMM) should be used (bool).</param>
+        /// <param name="method">Which matrix multiplication method should be used. See enum CPU_METHODS.</param>
         /// <param name="cores">The number of CPU cores that should be used for computation (int).</param>
         /// <param name="verbose">An integer parameter controlling how often progress should be printed to std::out. If 0 no progress will be printed.</param>
         /// <param name="memStat">An integer out parameter indicating if memory was successfully freed after execution, 0 = success, 1 = error.</param>
         /// <returns>An integer array with length (number of spectra * topN) containing the indices of the top n candidates for every spectrum.</returns>
         public static int[] searchCPU(ref int[] candidatesValues, ref int[] candidatesIdx, ref int[] spectraValues, ref int[] spectraIdx,
                                       int topN, float tolerance, bool normalize, bool useGaussianTol,
-                                      bool batched, int batchSize, bool useSparse, int cores, int verbose,
+                                      int batchSize, CPU_METHODS method, int cores, int verbose,
                                       out int memStat)
         {
             var cValuesLoc = GCHandle.Alloc(candidatesValues, GCHandleType.Pinned);
@@ -120,53 +174,73 @@ namespace VectorSearchInterface
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
-                if (!batched && useSparse)
+                switch(method)
                 {
-                    IntPtr result = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
-                                                      cVLength, cILength, sVLength, sILength,
-                                                      topN, tolerance, normalize, useGaussianTol,
-                                                      cores, verbose);
+                    case CPU_METHODS.f32CPU_SV:
+                        IntPtr result1 = findTopCandidates(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                           cVLength, cILength, sVLength, sILength,
+                                                           topN, tolerance, normalize, useGaussianTol,
+                                                           cores, verbose);
 
-                    Marshal.Copy(result, resultArray, 0, sILength * topN);
+                        Marshal.Copy(result1, resultArray, 0, sILength * topN);
 
-                    memStat = releaseMemory(result);
-                }
-                else if (!batched && !useSparse)
-                {
-                    IntPtr result = findTopCandidates2(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
-                                                       cVLength, cILength, sVLength, sILength,
-                                                       topN, tolerance, normalize, useGaussianTol,
-                                                       cores, verbose);
+                        memStat = releaseMemory(result1);
+                        break;
 
-                    Marshal.Copy(result, resultArray, 0, sILength * topN);
+                    case CPU_METHODS.f32CPU_DV:
+                        IntPtr result2 = findTopCandidates2(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                            cVLength, cILength, sVLength, sILength,
+                                                            topN, tolerance, normalize, useGaussianTol,
+                                                            cores, verbose);
 
-                    memStat = releaseMemory(result);
-                }
-                else if (batched && useSparse)
-                {
-                    IntPtr result = findTopCandidatesBatched(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
-                                                             cVLength, cILength, sVLength, sILength,
-                                                             topN, tolerance, normalize, useGaussianTol, batchSize,
-                                                             cores, verbose);
+                        Marshal.Copy(result2, resultArray, 0, sILength * topN);
 
-                    Marshal.Copy(result, resultArray, 0, sILength * topN);
+                        memStat = releaseMemory(result2);
+                        break;
 
-                    memStat = releaseMemory(result);
-                }
-                else if (batched && !useSparse)
-                {
-                    IntPtr result = findTopCandidatesBatched2(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                    case CPU_METHODS.f32CPU_SM:
+                        IntPtr result3 = findTopCandidatesBatched(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                                  cVLength, cILength, sVLength, sILength,
+                                                                  topN, tolerance, normalize, useGaussianTol, batchSize,
+                                                                  cores, verbose);
+
+                        Marshal.Copy(result3, resultArray, 0, sILength * topN);
+
+                        memStat = releaseMemory(result3);
+                        break;
+
+                    case CPU_METHODS.f32CPU_DM:
+                        IntPtr result4 = findTopCandidatesBatched2(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                                   cVLength, cILength, sVLength, sILength,
+                                                                   topN, tolerance, normalize, useGaussianTol, batchSize,
+                                                                   cores, verbose);
+
+                        Marshal.Copy(result4, resultArray, 0, sILength * topN);
+
+                        memStat = releaseMemory(result4);
+                        break;
+
+                    case CPU_METHODS.i32CPU_DM:
+                        IntPtr result5 = findTopCandidatesBatched2Int(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                                      cVLength, cILength, sVLength, sILength,
+                                                                      topN, tolerance, normalize, useGaussianTol, batchSize,
+                                                                      cores, verbose);
+
+                        Marshal.Copy(result5, resultArray, 0, sILength * topN);
+
+                        memStat = releaseMemory(result5);
+                        break;
+
+                    default:
+                        IntPtr result = findTopCandidates2Int(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                               cVLength, cILength, sVLength, sILength,
-                                                              topN, tolerance, normalize, useGaussianTol, batchSize,
+                                                              topN, tolerance, normalize, useGaussianTol,
                                                               cores, verbose);
 
-                    Marshal.Copy(result, resultArray, 0, sILength * topN);
+                        Marshal.Copy(result, resultArray, 0, sILength * topN);
 
-                    memStat = releaseMemory(result);
-                }
-                else
-                {
-                    Console.WriteLine("Impossible case!");
+                        memStat = releaseMemory(result);
+                        break;
                 }
             }
             catch (Exception ex)
@@ -201,15 +275,14 @@ namespace VectorSearchInterface
         /// <param name="tolerance">Tolerance used for matching peaks in Dalton (float).</param>
         /// <param name="normalize">Whether or not the candidate scores should be normalized by candidate length (bool).</param>
         /// <param name="useGaussianTol">Whether or not experimental peaks should be modelled as gaussian normal distributions (bool).</param>
-        /// <param name="batched">Whether a batched approach (MM) or not (MV) should be used (bool).</param>
         /// <param name="batchSize">If a batched approach is used, how big should batches be (integer).</param>
-        /// <param name="useSparse">Whether a sparse approach (SPMV/SPMM) or not (GEMV/GEMM) should be used (bool).</param>
+        /// <param name="method">Which matrix multiplication method should be used. See enum GPU_METHODS.</param>
         /// <param name="verbose">An integer parameter controlling how often progress should be printed to std::out. If 0 no progress will be printed.</param>
         /// <param name="memStat">An integer out parameter indicating if memory was successfully freed after execution, 0 = success, 1 = error.</param>
         /// <returns>An integer array with length (number of spectra * topN) containing the indices of the top n candidates for every spectrum.</returns>
         public static int[] searchGPU(ref int[] csrRowoffsets, ref int[] csrColIdx, ref int[] spectraValues, ref int[] spectraIdx,
                                       int topN, float tolerance, bool normalize, bool useGaussianTol,
-                                      bool batched, int batchSize, bool useSparse, int verbose,
+                                      int batchSize, GPU_METHODS method, int verbose,
                                       out int memStat)
         {
             var csrRowoffsetsLoc = GCHandle.Alloc(csrRowoffsets, GCHandleType.Pinned);
@@ -233,43 +306,40 @@ namespace VectorSearchInterface
                 IntPtr sValuesPtr = sValuesLoc.AddrOfPinnedObject();
                 IntPtr sIdxPtr = sIdxLoc.AddrOfPinnedObject();
 
-                if (!batched)
+                switch(method)
                 {
-                    IntPtr result = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr, sValuesPtr, sIdxPtr,
-                                                          cRLength, cILength, sVLength, sILength,
-                                                          topN, tolerance, normalize, useGaussianTol,
-                                                          verbose);
+                    case GPU_METHODS.f32GPU_DM:
+                        IntPtr result1 = findTopCandidatesCudaBatched2(csrRowoffsetsPtr, csrIdxPtr, sValuesPtr, sIdxPtr,
+                                                                       cRLength, cILength, sVLength, sILength,
+                                                                       topN, tolerance, normalize, useGaussianTol, batchSize,
+                                                                       verbose);
 
-                    Marshal.Copy(result, resultArray, 0, sILength * topN);
+                        Marshal.Copy(result1, resultArray, 0, sILength * topN);
 
-                    memStat = releaseMemoryCuda(result);
-                }
-                else
-                {
-                    if (!useSparse)
-                    {
-                        IntPtr result = findTopCandidatesCudaBatched2(csrRowoffsetsPtr, csrIdxPtr, sValuesPtr, sIdxPtr,
+                        memStat = releaseMemoryCuda(result1);
+                        break;
+
+                    case GPU_METHODS.f32GPU_SM:
+                        IntPtr result2 = findTopCandidatesCudaBatched(csrRowoffsetsPtr, csrIdxPtr, sValuesPtr, sIdxPtr,
                                                                       cRLength, cILength, sVLength, sILength,
                                                                       topN, tolerance, normalize, useGaussianTol, batchSize,
                                                                       verbose);
 
-                        Marshal.Copy(result, resultArray, 0, sILength * topN);
+                        Marshal.Copy(result2, resultArray, 0, sILength * topN);
 
-                        memStat = releaseMemoryCuda(result);
-                    }
-                    else
-                    {
+                        memStat = releaseMemoryCuda(result2);
+                        break;
 
-
-                        IntPtr result = findTopCandidatesCudaBatched(csrRowoffsetsPtr, csrIdxPtr, sValuesPtr, sIdxPtr,
-                                                                     cRLength, cILength, sVLength, sILength,
-                                                                     topN, tolerance, normalize, useGaussianTol, batchSize,
-                                                                     verbose);
+                    default:
+                        IntPtr result = findTopCandidatesCuda(csrRowoffsetsPtr, csrIdxPtr, sValuesPtr, sIdxPtr,
+                                                              cRLength, cILength, sVLength, sILength,
+                                                              topN, tolerance, normalize, useGaussianTol,
+                                                              verbose);
 
                         Marshal.Copy(result, resultArray, 0, sILength * topN);
 
                         memStat = releaseMemoryCuda(result);
-                    }
+                        break;
                 }
             }
             catch (Exception ex)

@@ -10,8 +10,8 @@
 #include <vector>
 
 const int versionMajor = 1;
-const int versionMinor = 4;
-const int versionFix = 8;
+const int versionMinor = 5;
+const int versionFix = 1;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -26,6 +26,7 @@ const int versionFix = 8;
 const int MASS_RANGE = 5000;                                // Encoding values up to 5000 m/z
 const int MASS_MULTIPLIER = 100;                            // Encoding values with 0.01 precision
 const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;     // The total length of an encoding vector
+const float ROUNDING_ACCURACY = (float) INT8_MAX / 7.0f;    // Rounding precision for converting gaussian f32 to i8
 const double ONE_OVER_SQRT_PI = 0.39894228040143267793994605993438;
 
 extern "C" {
@@ -36,6 +37,14 @@ extern "C" {
                                       int, float,
                                       bool, bool,
                                       int);
+
+    EXPORT int* findTopCandidatesCudaInt(int*, int*,
+                                         int*, int*,
+                                         int, int,
+                                         int, int,
+                                         int, float,
+                                         bool, bool,
+                                         int);
 
     EXPORT int* findTopCandidatesCudaBatched(int*, int*,
                                              int*, int*,
@@ -196,14 +205,176 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx,
         CHECK_CUSPARSE(cusparseSpMV_bufferSize(handle,
                                                CUSPARSE_OPERATION_NON_TRANSPOSE,
                                                &alpha, mat, vec, &beta, res,
-                                               CUDA_R_32F, CUSPARSE_SPMV_CSR_ALG1, &bufferSize));
+                                               CUDA_R_32F, CUSPARSE_SPMV_ALG_DEFAULT, &bufferSize));
         CHECK_CUDA(cudaMalloc(&dBuffer, bufferSize));
         CHECK_CUSPARSE(cusparseSpMV(handle,
                                     CUSPARSE_OPERATION_NON_TRANSPOSE,
                                     &alpha, mat, vec, &beta, res,
-                                    CUDA_R_32F, CUSPARSE_SPMV_CSR_ALG1, dBuffer));
+                                    CUDA_R_32F, CUSPARSE_SPMV_ALG_DEFAULT, dBuffer));
 
         CHECK_CUDA(cudaMemcpy(MVresult, dMVresult, (csrRowoffsetsLength - 1) * sizeof(float), cudaMemcpyDeviceToHost));
+        CHECK_CUSPARSE(cusparseDestroyDnVec(vec));
+        delete[] V;
+
+        // host result max
+        auto* idx = new int[csrRowoffsetsLength - 1];
+        std::iota(idx, idx + csrRowoffsetsLength - 1, 0);
+        std::sort(idx, idx + csrRowoffsetsLength - 1, [&](int i, int j) {return MVresult[i] > MVresult[j];});
+
+        for (int j = 0; j < n; ++j) {
+            result[i * n + j] = idx[j];
+        }
+
+        delete[] idx;
+
+        if (verbose != 0 && (i + 1) % verbose == 0) {
+            std::cout << "Searched " << i + 1 << " spectra in total..." << std::endl;
+        }
+    }
+
+    // device destroy descriptors
+    CHECK_CUSPARSE(cusparseDestroySpMat(mat));
+    CHECK_CUSPARSE(cusparseDestroyDnVec(res));
+    CHECK_CUSPARSE(cusparseDestroy(handle));
+
+    // device memory deallocation
+    CHECK_CUDA(cudaFree(dBuffer));
+    CHECK_CUDA(cudaFree(dM_csrRowoffsets));
+    CHECK_CUDA(cudaFree(dM_csrColIdx));
+    CHECK_CUDA(cudaFree(dM_csrValues));
+    CHECK_CUDA(cudaFree(dV));
+    CHECK_CUDA(cudaFree(dMVresult));
+
+    // host memory deallocation
+    delete[] MVresult;
+    delete[] csrValues;
+
+    return result;
+}
+
+/// <summary>
+/// A function that calculates the top n candidates for each spectrum (SpM*V) using i8 and 32 operations.
+/// </summary>
+/// <param name="csrRowoffsets">Rowoffsets (int array) of the CSR sparse matrix (L: rows + 1).</param>
+/// <param name="csrColIdx">Column indices (int array) of the CSR sparse matrix (L: NNZ).</param>
+/// <param name="spectraValues">An integer array of peaks from experimental spectra flattened.</param>
+/// <param name="spectraIdx">An integer array that contains indices of where each spectrum starts in spectraValues.</param>
+/// <param name="csrRowoffsetsLength">Length (int) of csrRowoffsets (rows + 1).</param>
+/// <param name="csrNNZ">Number of non-zero entries (int) in the CSR sparse matrix.</param>
+/// <param name="sVLength">Length (int) of spectraValues.</param>
+/// <param name="sILength">Length (int) of spectraIdx.</param>
+/// <param name="n">How many of the best hits should be returned (int).</param>
+/// <param name="tolerance">Tolerance for peak matching (float).</param>
+/// <param name="normalize">If candidate vectors should be normalized to sum(elements) = 1 (bool).</param>
+/// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
+/// <param name="verbose">Print info every (int) processed spectra.</param>
+/// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+int* findTopCandidatesCudaInt(int* csrRowoffsets, int* csrColIdx,
+                              int* spectraValues, int* spectraIdx,
+                              int csrRowoffsetsLength, int csrNNZ,
+                              int sVLength, int sILength,
+                              int n, float tolerance,
+                              bool normalize, bool gaussianTol,
+                              int verbose) {
+
+    if (n >= csrRowoffsetsLength) {
+        throw std::invalid_argument("Cannot return more hits than number of candidates!");
+    }
+
+    if (tolerance < 0.01f) {
+        throw std::invalid_argument("Tolerance must not be smaller than 0.01 for i8 operations!");
+    }
+
+    std::cout << "Running CUDA i8 vector search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+
+    float t = round(tolerance * MASS_MULTIPLIER);
+    int* result = new int[sILength * n];
+    int8_t* csrValues = new int8_t[csrNNZ];
+    int* MVresult = new int[csrRowoffsetsLength - 1] {0};
+
+    // create csrValues
+    for (int i = 0; i < csrRowoffsetsLength - 1; ++i) {
+        int startIter = csrRowoffsets[i];
+        int endIter = csrRowoffsets[i + 1];
+        int nrNonZero = endIter - startIter;
+        int8_t val = normalize ? (int8_t) round(INT8_MAX / (float) nrNonZero) : 1i8;
+        for (int j = startIter; j < endIter; ++j) {
+            csrValues[j] = val;
+        }
+    }
+
+    // cusparse spmv variables
+    int8_t alpha = 1i8;
+    int8_t beta = 0i8;
+
+    // device memory management
+    int* dM_csrRowoffsets;
+    int* dM_csrColIdx;
+    int8_t* dM_csrValues;
+    int8_t* dV;
+    int* dMVresult;
+
+    CHECK_CUDA(cudaMalloc((void**) &dM_csrRowoffsets, csrRowoffsetsLength * sizeof(int)));
+    CHECK_CUDA(cudaMalloc((void**) &dM_csrColIdx, csrNNZ * sizeof(int)));
+    CHECK_CUDA(cudaMalloc((void**) &dM_csrValues, csrNNZ * sizeof(int8_t)));
+    CHECK_CUDA(cudaMalloc((void**) &dV, ENCODING_SIZE * sizeof(int8_t)));
+    CHECK_CUDA(cudaMalloc((void**) &dMVresult, (csrRowoffsetsLength - 1) * sizeof(int)));
+
+    // device memory copy
+    CHECK_CUDA(cudaMemcpy(dM_csrRowoffsets, csrRowoffsets, csrRowoffsetsLength * sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA(cudaMemcpy(dM_csrColIdx, csrColIdx, csrNNZ * sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA(cudaMemcpy(dM_csrValues, csrValues, csrNNZ * sizeof(int8_t), cudaMemcpyHostToDevice));
+    CHECK_CUDA(cudaMemcpy(dMVresult, MVresult, (csrRowoffsetsLength - 1) * sizeof(int), cudaMemcpyHostToDevice));
+
+    // device setup cusparse
+    cusparseHandle_t handle = NULL;
+    cusparseSpMatDescr_t mat;
+    cusparseDnVecDescr_t vec;
+    cusparseDnVecDescr_t res;
+    void* dBuffer = NULL;
+    size_t bufferSize = 0;
+
+    CHECK_CUSPARSE(cusparseCreate(&handle));
+    CHECK_CUSPARSE(cusparseCreateCsr(&mat, csrRowoffsetsLength - 1, ENCODING_SIZE, csrNNZ,
+                                     dM_csrRowoffsets, dM_csrColIdx, dM_csrValues,
+                                     CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+                                     CUSPARSE_INDEX_BASE_ZERO, CUDA_R_8I));
+    CHECK_CUSPARSE(cusparseCreateDnVec(&res, csrRowoffsetsLength - 1, dMVresult, CUDA_R_32I));
+
+    // device iterative spmv
+    for (int i = 0; i < sILength; ++i) {
+
+        int8_t* V = new int8_t[ENCODING_SIZE] {0i8};
+
+        // host spectrum encoding
+        int startIter = spectraIdx[i];
+        int endIter = i + 1 == sILength ? sVLength : spectraIdx[i + 1];
+        for (int j = startIter; j < endIter; ++j) {
+            auto currentPeak = spectraValues[j];
+            auto minPeak = currentPeak - t > 0 ? currentPeak - t : 0;
+            auto maxPeak = currentPeak + t < ENCODING_SIZE ? currentPeak + t : ENCODING_SIZE - 1;
+
+            for (int k = minPeak; k <= maxPeak; ++k) {
+                int8_t currentVal = V[k];
+                int8_t newVal = gaussianTol ? (int8_t) round(normpdf((float) k, (float) currentPeak, (float) (t / 3.0)) * ROUNDING_ACCURACY) : 1i8;
+                V[k] = max(currentVal, newVal);
+            }
+        }
+
+        // device spmv
+        CHECK_CUDA(cudaMemcpy(dV, V, ENCODING_SIZE * sizeof(int8_t), cudaMemcpyHostToDevice));
+        CHECK_CUSPARSE(cusparseCreateDnVec(&vec, ENCODING_SIZE, dV, CUDA_R_8I));
+        CHECK_CUSPARSE(cusparseSpMV_bufferSize(handle,
+                                               CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                               &alpha, mat, vec, &beta, res,
+                                               CUDA_R_32I, CUSPARSE_SPMV_CSR_ALG2, &bufferSize));
+        CHECK_CUDA(cudaMalloc(&dBuffer, bufferSize));
+        CHECK_CUSPARSE(cusparseSpMV(handle,
+                                    CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                    &alpha, mat, vec, &beta, res,
+                                    CUDA_R_32I, CUSPARSE_SPMV_CSR_ALG2, dBuffer));
+
+        CHECK_CUDA(cudaMemcpy(MVresult, dMVresult, (csrRowoffsetsLength - 1) * sizeof(int), cudaMemcpyDeviceToHost));
         CHECK_CUSPARSE(cusparseDestroyDnVec(vec));
         delete[] V;
 
