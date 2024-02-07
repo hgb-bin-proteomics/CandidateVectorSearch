@@ -51,6 +51,20 @@ Compiled DLLs for Windows (10+, x64) are available in the `dll` folder or in
 
 For other operating systems/architectures please compile the source code yourself!
 
+## Limitations
+
+Please be aware of the following limitations:
+- Ions/peaks up to 5000 m/z are supported, beyond that they are discarded.
+- The encoding precision is 0.01 (m/z, Dalton).
+- \[Eigen\]\[Sparse\] Sparse candidate matrices support up to 100 elements per row, beyond that matrix creation might be slow due to resizing.
+  - This means every peptide candidate can be encoded up to 100 ions.
+- \[Eigen\]\[Sparse\] Sparse spectrum matrices support up to 1000 elements per row, beyond that matrix creation might be slow due to resizing.
+  - This means spectra with more than 1000 peaks should be deisotoped, deconvoluted or peak picked to decrease the number of peaks.
+  - This does not affect dense spectrum matrices.
+- \[Eigen\]\[i32\] The rounding precision of converting floats to integers is 0.001, the exact rounding for a float `val` is `(int) round(val * 1000.0f)`.
+- \[Eigen\]\[i32\] Integer based methods do not allow tolerances below 0.01 because they might cause overflows.
+- \[CUDA\] Sparse matrix - sparse matrix multiplication tends to be very slow and very memory hungry, most likely caused by memory overhead and the output matrix not being sparse.
+
 ## Acknowledgements
 
 - This project uses [Eigen](https://eigen.tuxfamily.org/) and [CUDA](https://developer.nvidia.com/cuda-toolkit) to implement sparse linear algebra, [Eigen](https://eigen.tuxfamily.org/) is licensed under [MPL2](https://www.mozilla.org/en-US/MPL/2.0/), and [CUDA](https://developer.nvidia.com/cuda-toolkit) is owned by [NVIDIA Corporation](https://www.nvidia.com/).
