@@ -9,7 +9,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 7;
-const int versionFix = 0;
+const int versionFix = 1;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
