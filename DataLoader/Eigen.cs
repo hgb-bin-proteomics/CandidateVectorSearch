@@ -16,6 +16,15 @@ namespace CandidateVectorSearch
                                                        int cores, int verbose);
 
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidatesInt(IntPtr cV, IntPtr cI,
+                                                          IntPtr sV, IntPtr sI,
+                                                          int cVL, int cIL,
+                                                          int sVL, int sIL,
+                                                          int n, float tolerance,
+                                                          bool normalize, bool gaussianTol,
+                                                          int cores, int verbose);
+
+        [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr findTopCandidatesBatched(IntPtr cV, IntPtr cI,
                                                               IntPtr sV, IntPtr sI,
                                                               int cVL, int cIL,
@@ -24,6 +33,16 @@ namespace CandidateVectorSearch
                                                               bool normalize, bool gaussianTol,
                                                               int batchSize,
                                                               int cores, int verbose);
+
+        [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidatesBatchedInt(IntPtr cV, IntPtr cI,
+                                                                 IntPtr sV, IntPtr sI,
+                                                                 int cVL, int cIL,
+                                                                 int sVL, int sIL,
+                                                                 int n, float tolerance,
+                                                                 bool normalize, bool gaussianTol,
+                                                                 int batchSize,
+                                                                 int cores, int verbose);
 
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr findTopCandidates2(IntPtr cV, IntPtr cI,
@@ -143,32 +162,67 @@ namespace CandidateVectorSearch
                 {
                     if (batched)
                     {
-                        IntPtr result = findTopCandidatesBatched2Int(cValuesPtr, cIdxPtr,
-                                                                     sValuesPtr, sIdxPtr,
-                                                                     candidateValues.Length, candidatesIdx.Length,
-                                                                     spectraValues.Length, spectraIdx.Length,
-                                                                     topN, (float) 0.02,
-                                                                     NORMALIZE, USE_GAUSSIAN,
-                                                                     batchSize,
-                                                                     0, 1000);
+                        if (sparse)
+                        {
+                            IntPtr result = findTopCandidatesBatchedInt(cValuesPtr, cIdxPtr,
+                                                                        sValuesPtr, sIdxPtr,
+                                                                        candidateValues.Length, candidatesIdx.Length,
+                                                                        spectraValues.Length, spectraIdx.Length,
+                                                                        topN, (float) 0.02,
+                                                                        NORMALIZE, USE_GAUSSIAN,
+                                                                        batchSize,
+                                                                        0, 1000);
 
-                        Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+                            Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
 
-                        memStat = releaseMemory(result);
+                            memStat = releaseMemory(result);
+                        }
+                        else
+                        {
+                            IntPtr result = findTopCandidatesBatched2Int(cValuesPtr, cIdxPtr,
+                                                                         sValuesPtr, sIdxPtr,
+                                                                         candidateValues.Length, candidatesIdx.Length,
+                                                                         spectraValues.Length, spectraIdx.Length,
+                                                                         topN, (float) 0.02,
+                                                                         NORMALIZE, USE_GAUSSIAN,
+                                                                         batchSize,
+                                                                         0, 1000);
+
+                            Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+
+                            memStat = releaseMemory(result);
+                        }
                     }
                     else
                     {
-                        IntPtr result = findTopCandidates2Int(cValuesPtr, cIdxPtr,
-                                                              sValuesPtr, sIdxPtr,
-                                                              candidateValues.Length, candidatesIdx.Length,
-                                                              spectraValues.Length, spectraIdx.Length,
-                                                              topN, (float) 0.02,
-                                                              NORMALIZE, USE_GAUSSIAN,
-                                                              0, 1000);
+                        if (sparse)
+                        {
+                            IntPtr result = findTopCandidatesInt(cValuesPtr, cIdxPtr,
+                                                                 sValuesPtr, sIdxPtr,
+                                                                 candidateValues.Length, candidatesIdx.Length,
+                                                                 spectraValues.Length, spectraIdx.Length,
+                                                                 topN, (float) 0.02,
+                                                                 NORMALIZE, USE_GAUSSIAN,
+                                                                 0, 1000);
 
-                        Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+                            Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
 
-                        memStat = releaseMemory(result);
+                            memStat = releaseMemory(result);
+                        }
+                        else
+                        {
+                            IntPtr result = findTopCandidates2Int(cValuesPtr, cIdxPtr,
+                                                                  sValuesPtr, sIdxPtr,
+                                                                  candidateValues.Length, candidatesIdx.Length,
+                                                                  spectraValues.Length, spectraIdx.Length,
+                                                                  topN, (float) 0.02,
+                                                                  NORMALIZE, USE_GAUSSIAN,
+                                                                  0, 1000);
+
+                            Marshal.Copy(result, resultArray, 0, spectraIdx.Length * topN);
+
+                            memStat = releaseMemory(result);
+                        }
                     }
                 }
                 else if (!batched && sparse)
