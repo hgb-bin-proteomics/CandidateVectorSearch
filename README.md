@@ -7,9 +7,11 @@ a given mass spectrum without any information about precursor mass or variable m
 Implements the following methods across two DLLs:
 - [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp):
   - findTopCandidates: sparse matrix - sparse vector multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
+  - findTopCandidatesInt: sparse matrix - sparse vector multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidates2: sparse matrix - dense vector multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidates2Int: sparse matrix - dense vector multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidatesBatched: sparse matrix - sparse matrix multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
+  - findTopCandidatesBatchedInt: sparse matrix - sparse matrix multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidatesBatched2: sparse matrix - dense matrix multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidatesBatched2Int: sparse matrix - dense matrix multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
 - [VectorSearchCUDA.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchCUDA/dllmain.cpp):
