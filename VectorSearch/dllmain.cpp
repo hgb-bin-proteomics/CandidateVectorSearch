@@ -9,7 +9,7 @@
 
 const int versionMajor = 1;
 const int versionMinor = 7;
-const int versionFix = 1;
+const int versionFix = 2;
 
 #define METHOD_EXPORTS
 #ifdef METHOD_EXPORTS
@@ -727,7 +727,7 @@ int* findTopCandidatesBatchedInt(int* candidatesValues, int* candidatesIdx,
     Eigen::setNbThreads(cores);
     usedCores = Eigen::nbThreads();
 
-    std::cout << "Running Eigen f32 sparse matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
+    std::cout << "Running Eigen i32 sparse matrix search version " << versionMajor << "." << versionMinor << "." << versionFix << std::endl;
     std::cout << "Using " << usedCores << " threads in total." << std::endl;
 
     auto* m = new Eigen::SparseMatrix<int, Eigen::RowMajor>(cILength, ENCODING_SIZE);
