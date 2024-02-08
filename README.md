@@ -7,9 +7,11 @@ a given mass spectrum without any information about precursor mass or variable m
 Implements the following methods across two DLLs:
 - [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp):
   - findTopCandidates: sparse matrix - sparse vector multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
+  - findTopCandidatesInt: sparse matrix - sparse vector multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidates2: sparse matrix - dense vector multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidates2Int: sparse matrix - dense vector multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidatesBatched: sparse matrix - sparse matrix multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
+  - findTopCandidatesBatchedInt: sparse matrix - sparse matrix multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidatesBatched2: sparse matrix - dense matrix multiplication [f32] using [Eigen](https://eigen.tuxfamily.org/).
   - findTopCandidatesBatched2Int: sparse matrix - dense matrix multiplication [i32] using [Eigen](https://eigen.tuxfamily.org/).
 - [VectorSearchCUDA.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearchCUDA/dllmain.cpp):
@@ -48,6 +50,20 @@ Compiled DLLs for Windows (10+, x64) are available in the `dll` folder or in
 [Releases](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/releases).
 
 For other operating systems/architectures please compile the source code yourself!
+
+## Limitations
+
+Please be aware of the following limitations:
+- Ions/peaks up to 5000 m/z are supported, beyond that they are discarded.
+- The encoding precision is 0.01 (m/z, Dalton).
+- \[Eigen\]\[Sparse\] Sparse candidate matrices support up to 100 elements per row, beyond that matrix creation might be slow due to resizing.
+  - This means every peptide candidate can be encoded up to 100 ions.
+- \[Eigen\]\[Sparse\] Sparse spectrum matrices support up to 1000 elements per row, beyond that matrix creation might be slow due to resizing.
+  - This means spectra with more than 1000 peaks should be deisotoped, deconvoluted or peak picked to decrease the number of peaks.
+  - This does not affect dense spectrum matrices.
+- \[Eigen\]\[i32\] The rounding precision of converting floats to integers is 0.001, the exact rounding for a float `val` is `(int) round(val * 1000.0f)`.
+- \[Eigen\]\[i32\] Integer based methods do not allow tolerances below 0.01 because they might cause overflows.
+- \[CUDA\] Sparse matrix - sparse matrix multiplication tends to be very slow and very memory hungry, most likely caused by memory overhead and the output matrix not being sparse.
 
 ## Acknowledgements
 

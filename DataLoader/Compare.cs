@@ -75,9 +75,11 @@ namespace CandidateVectorSearch
             var sValuesLoc = GCHandle.Alloc(spectraValues, GCHandleType.Pinned);
             var sIdxLoc = GCHandle.Alloc(spectraIdx, GCHandleType.Pinned);
             var resultArrayEigen = new int[spectraIdx.Length * topN];
+            var resultArrayEigenInt = new int[spectraIdx.Length * topN];
             var resultArrayEigen2 = new int[spectraIdx.Length * topN];
             var resultArrayEigen2Int = new int[spectraIdx.Length * topN];
             var resultArrayEigenB = new int[spectraIdx.Length * topN];
+            var resultArrayEigenBInt = new int[spectraIdx.Length * topN];
             var resultArrayEigenB2 = new int[spectraIdx.Length * topN];
             var resultArrayEigenB2Int = new int[spectraIdx.Length * topN];
             var resultArrayCuda = new int[spectraIdx.Length * topN];
@@ -104,6 +106,18 @@ namespace CandidateVectorSearch
                 memStat = releaseMemory(resultEigen);
 
                 sw1.Stop();
+
+                var sw1Int = Stopwatch.StartNew();
+
+                IntPtr resultEigenInt = findTopCandidatesInt(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                             candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                                                             topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, 0, 0);
+
+                Marshal.Copy(resultEigenInt, resultArrayEigenInt, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemory(resultEigenInt);
+
+                sw1Int.Stop();
 
                 var sw2 = Stopwatch.StartNew();
 
@@ -140,6 +154,18 @@ namespace CandidateVectorSearch
                 memStat = releaseMemory(resultEigenB);
 
                 sw3.Stop();
+
+                var sw3Int = Stopwatch.StartNew();
+
+                IntPtr resultEigenBInt = findTopCandidatesBatchedInt(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                                     candidateValues.Length, candidatesIdx.Length, spectraValues.Length, spectraIdx.Length,
+                                                                     topN, (float) 0.02, NORMALIZE, USE_GAUSSIAN, batchSize, 0, 0);
+
+                Marshal.Copy(resultEigenBInt, resultArrayEigenBInt, 0, spectraIdx.Length * topN);
+
+                memStat = releaseMemory(resultEigenBInt);
+
+                sw3Int.Stop();
 
                 var sw4 = Stopwatch.StartNew();
 
@@ -209,12 +235,16 @@ namespace CandidateVectorSearch
 
                 Console.WriteLine("Time for candidate search Eigen SpM*SpV:");
                 Console.WriteLine(sw1.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Eigen SpM*SpV (int):");
+                Console.WriteLine(sw1Int.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*V:");
                 Console.WriteLine(sw2.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*V (int):");
                 Console.WriteLine(sw2Int.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*SpM:");
                 Console.WriteLine(sw3.Elapsed.TotalSeconds.ToString());
+                Console.WriteLine("Time for candidate search Eigen SpM*SpM (int):");
+                Console.WriteLine(sw3Int.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*M:");
                 Console.WriteLine(sw4.Elapsed.TotalSeconds.ToString());
                 Console.WriteLine("Time for candidate search Eigen SpM*M (int):");
@@ -246,9 +276,11 @@ namespace CandidateVectorSearch
             for (int i = 0; i < topN; i++)
             {
                 Console.WriteLine($"eSpVf32: {resultArrayEigen[i]}");
+                Console.WriteLine($"eSpVi32: {resultArrayEigenInt[i]}");
                 Console.WriteLine($"eDnVf32: {resultArrayEigen2[i]}");
                 Console.WriteLine($"eDnVi32: {resultArrayEigen2Int[i]}");
                 Console.WriteLine($"eSpMf32: {resultArrayEigenB[i]}");
+                Console.WriteLine($"eSpMi32: {resultArrayEigenBInt[i]}");
                 Console.WriteLine($"eDnMf32: {resultArrayEigenB2[i]}");
                 Console.WriteLine($"eDnMi32: {resultArrayEigenB2Int[i]}");
                 Console.WriteLine($"cDnVf32: {resultArrayCuda[i]}");
@@ -262,9 +294,11 @@ namespace CandidateVectorSearch
             for (int i = spectraIdx.Length * topN - topN; i < spectraIdx.Length * topN; i++)
             {
                 Console.WriteLine($"eSpVf32: {resultArrayEigen[i]}");
+                Console.WriteLine($"eSpVi32: {resultArrayEigenInt[i]}");
                 Console.WriteLine($"eDnVf32: {resultArrayEigen2[i]}");
                 Console.WriteLine($"eDnVi32: {resultArrayEigen2Int[i]}");
                 Console.WriteLine($"eSpMf32: {resultArrayEigenB[i]}");
+                Console.WriteLine($"eSpMi32: {resultArrayEigenBInt[i]}");
                 Console.WriteLine($"eDnMf32: {resultArrayEigenB2[i]}");
                 Console.WriteLine($"eDnMi32: {resultArrayEigenB2Int[i]}");
                 Console.WriteLine($"cDnVf32: {resultArrayCuda[i]}");

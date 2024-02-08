@@ -15,7 +15,9 @@ namespace VectorSearchInterface
         /// - f32CPU_DV: Sparse matrix - dense vector multiplication using float operations.
         /// - i32CPU_DM: Sparse matrix - dense matrix multiplication using integer operations.
         /// - f32CPU_DM: Sparse matrix - dense matrix multiplication using float operations.
+        /// - i32CPU_SV: Sparse matrix - sparse vector multiplication using integer operations.
         /// - f32CPU_SV: Sparse matrix - sparse vector multiplication using float operations.
+        /// - i32CPU_SM: Sparse matrix - sparse matrix multiplication using integer operations.
         /// - f32CPU_SM: Sparse matrix - sparse matrix multiplication using float operations.
         /// </summary>
         public enum CPU_METHODS
@@ -24,7 +26,9 @@ namespace VectorSearchInterface
             f32CPU_DV,
             i32CPU_DM,
             f32CPU_DM,
+            i32CPU_SV,
             f32CPU_SV,
+            i32CPU_SM,
             f32CPU_SM
         }
 
@@ -57,12 +61,27 @@ namespace VectorSearchInterface
                                                        int cores, int verbose);
 
         [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidatesInt(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
+                                                          int cVL, int cIL, int sVL, int sIL,
+                                                          int n, float tolerance,
+                                                          bool normalize, bool gaussianTol,
+                                                          int cores, int verbose);
+
+        [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr findTopCandidatesBatched(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
                                                               int cVL, int cIL, int sVL, int sIL,
                                                               int n, float tolerance,
                                                               bool normalize, bool gaussianTol,
                                                               int batchSize,
                                                               int cores, int verbose);
+
+        [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr findTopCandidatesBatchedInt(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
+                                                                 int cVL, int cIL, int sVL, int sIL,
+                                                                 int n, float tolerance,
+                                                                 bool normalize, bool gaussianTol,
+                                                                 int batchSize,
+                                                                 int cores, int verbose);
 
         [DllImport(dllCPU, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr findTopCandidates2(IntPtr cV, IntPtr cI, IntPtr sV, IntPtr sI,
@@ -231,11 +250,33 @@ namespace VectorSearchInterface
                         memStat = releaseMemory(result5);
                         break;
 
-                    default:
-                        IntPtr result = findTopCandidates2Int(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                    case CPU_METHODS.i32CPU_DV:
+                        IntPtr result6 = findTopCandidates2Int(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                               cVLength, cILength, sVLength, sILength,
+                                                               topN, tolerance, normalize, useGaussianTol,
+                                                               cores, verbose);
+
+                        Marshal.Copy(result6, resultArray, 0, sILength * topN);
+
+                        memStat = releaseMemory(result6);
+                        break;
+
+                    case CPU_METHODS.i32CPU_SV:
+                        IntPtr result7 = findTopCandidatesInt(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
                                                               cVLength, cILength, sVLength, sILength,
                                                               topN, tolerance, normalize, useGaussianTol,
                                                               cores, verbose);
+
+                        Marshal.Copy(result7, resultArray, 0, sILength * topN);
+
+                        memStat = releaseMemory(result7);
+                        break;
+
+                    default:
+                        IntPtr result = findTopCandidatesBatchedInt(cValuesPtr, cIdxPtr, sValuesPtr, sIdxPtr,
+                                                                    cVLength, cILength, sVLength, sILength,
+                                                                    topN, tolerance, normalize, useGaussianTol, batchSize,
+                                                                    cores, verbose);
 
                         Marshal.Copy(result, resultArray, 0, sILength * topN);
 
