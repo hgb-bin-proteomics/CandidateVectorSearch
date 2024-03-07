@@ -65,6 +65,11 @@ Please be aware of the following limitations:
 - \[Eigen\]\[i32\] Integer based methods do not allow tolerances below 0.01 because they might cause overflows.
 - \[CUDA\] Sparse matrix - sparse matrix multiplication tends to be very slow and very memory hungry, most likely caused by memory overhead and the output matrix not being sparse.
 
+## Implementing your own matrix products
+
+If you want to implement your own (and hopefully faster) computation for matrix products, we offer a template repository that walks you through that:
+[CandidateVectorSearch_template](https://github.com/hgb-bin-proteomics/CandidateVectorSearch_template/)
+
 ## Acknowledgements
 
 - This project uses [Eigen](https://eigen.tuxfamily.org/) and [CUDA](https://developer.nvidia.com/cuda-toolkit) to implement sparse linear algebra, [Eigen](https://eigen.tuxfamily.org/) is licensed under [MPL2](https://www.mozilla.org/en-US/MPL/2.0/), and [CUDA](https://developer.nvidia.com/cuda-toolkit) is owned by [NVIDIA Corporation](https://www.nvidia.com/).
