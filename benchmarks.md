@@ -1,69 +1,59 @@
 # Benchmarks
 
-- Encoding size: 130 000
-- X: Number of simulated peptide candidates
-- Y: Number of simulated spectra
-- N: Number of simulated ions per peptide candidate
+The following are basically benchmarks of the different sparse matrix/vector
+multiplication methods of [Eigen](https://eigen.tuxfamily.org/) and
+[cuSPARSE](https://docs.nvidia.com/cuda/cusparse/).
 
-## System 1
+These benchmarks are supposed to be worst-case scenarios when doing candidate
+search, e.g. these benchmarks assume that every peptide would yield 100 ions and
+every spectrum 1000 peaks, while also performing normalization and gaussian peak
+modeling.
 
-- Intel Core i7-1185G7 [4 cores @ 1.8 GHz base/ 3.0 GHz boost]
-- 16 GB DDR4 RAM [3200 MT/s, NA CAS]
-- Nvidia T500 [2GB VRAM]
+We ran benchmarks for different database sizes (different number of candidate
+peptides to be considered) to assess how that influences performance of the
+different methods. Furthermore, every benchmark is run five times to get a more
+comprehensive overview of computation times.
 
-|Method|X|Y|N|Time (s)|Time/Y (s)|Best|
-|-----|-----|-----|-----|-----|-----|-----|
-|Eigen|10000|299|100|0,229|0,000765886|1|
-|EigenS|10000|299|100|0,859|0,00287291|4|
-|EigenB|10000|299|100|0,329|0,001100334|3|
-|EigenSB|10000|299|100|0,326|0,001090301|2|
-|Cuda|10000|299|100|1,453|0,004859532|5|
-|CudaB1|10000|299|100|6,447|0,021561873|7|
-|CudaB2|10000|299|100|1,934|0,006468227|6|
+For all benchmarks we search 1001 spectra (this is specifically selected to see
+if batched multiplication has influence on performance) and return the top 100
+candidates.
 
-|Method|X|Y|N|Time (s)|Time/Y (s)|Best|
-|-----|-----|-----|-----|-----|-----|-----|
-|Eigen|100000|299|100|2,192|0,007331104|2|
-|EigenS|100000|299|100|7,744|0,025899666|6|
-|EigenB|100000|299|100|2,756|0,009217391|4|
-|EigenSB|100000|299|100|2,021|0,006759197|1|
-|Cuda|100000|299|100|2,737|0,009153846|3|
-|CudaB1|100000|299|100|-|-|7|
-|CudaB2|100000|299|100|7,612|0,025458194|5|
+## System 1 - Standard Office PC
 
-|Method|X|Y|N|Time (s)|Time/Y (s)|Best|
-|-----|-----|-----|-----|-----|-----|-----|
-|Eigen|1000000|299|100|22,446|0,075070234|3|
-|EigenS|1000000|299|100|77,142|0,258|6|
-|EigenB|1000000|299|100|25,047|0,083769231|4|
-|EigenSB|1000000|299|100|20,579|0,068826087|2|
-|Cuda|1000000|299|100|18,295|0,061187291|1|
-|CudaB1|1000000|299|100|-|-|7|
-|CudaB2|1000000|299|100|65,571|0,219301003|5|
+The first system we tested this on was a standard office laptop with the
+following hardware:
+- Model: Dell Precision 3560
+- CPU: Intel Core i7-1185G7 [4 cores @ 1.8 GHz base/ 3.0 GHz boost]
+- RAM: 16 GB DDR4 RAM [3200 MT/s, NA CAS]
+- GPU: Nvidia T500 [2GB VRAM]
+- SSD/HDD: 512 GB NVMe SSD
+- OS: Windows 10 Education 64-bit (10.0, Build 19045)
 
-|Method|X|Y|N|Time (s)|Time/Y (s)|Best|
-|-----|-----|-----|-----|-----|-----|-----|
-|Eigen|2000000|299|100|54,65|0,18277592|2|
-|EigenS|2000000|299|100|173,205|0,579280936|5|
-|EigenB|2000000|299|100|57,366|0,191859532|4|
-|EigenSB|2000000|299|100|56,491|0,18893311|3|
-|Cuda|2000000|299|100|31,138|0,104140468|1|
-|CudaB1|2000000|299|100|-|-|7|
-|CudaB2|2000000|299|100|198,251|0,663046823|6|
+### 10 000 Candidates
 
-|Method|X|Y|N|Time (s)|Time/Y (s)|Best|
-|-----|-----|-----|-----|-----|-----|-----|
-|Eigen|3000000|299|100|68,721|0,22983612|2|
-|EigenS|3000000|299|100|227,527|0,760959866|5|
-|EigenB|3000000|299|100|81,495|0,272558528|3|
-|EigenSB|3000000|299|100|68,644|0,229578595|1|
-|Cuda|3000000|299|100|131,857|0,440993311|4|
-|CudaB1|3000000|299|100|-|-|7|
-|CudaB2|3000000|299|100|-|-|6|
+`A * B = C where A[10000, 500000] and B[500000, 1001]`
 
-|Method|X|Y|N|Time (s)|Time/Y (s)|Best|
-|-----|-----|-----|-----|-----|-----|-----|
-|Eigen|5000000|299|100|114,979|0,384545151|1|
-|EigenS|5000000|299|100|381,543|1,276063545|4|
-|EigenB|5000000|299|100|141,609|0,473608696|3|
-|EigenSB|5000000|299|100|126,029|0,421501672|2|
+Using a database of 10 000 peptide candidates the methods yield the following
+runtimes:
+
+![benchmark_pc_10000](Benchmarks/benchmark_pc_10000.svg)
+**Figure 1:** Caption.
+
+
+<details><summar>Expand for raw data!</summary>
+
+| Method    |   Candidates |   Run 1 |     Run 2 |    Run 3 |    Run 4 |    Run 5 |      Min |      Max |     Mean |        SD |   Rank |    Y |   N |
+|:----------|-------------:|--------:|----------:|---------:|---------:|---------:|---------:|---------:|---------:|----------:|-------:|-----:|----:|
+| f32CPU_SV |        10000 | 3.96232 |  3.99317  |  4.16333 |  4.12433 |  4.03925 | 3.96232  |  4.16333 |  4.05648 | 0.0854273 |      8 | 1001 | 100 |
+| i32CPU_SV |        10000 | 4.20677 |  4.21627  |  4.18454 |  4.21334 |  4.30658 | 4.18454  |  4.30658 |  4.2255  | 0.0469989 |      9 | 1001 | 100 |
+| f32CPU_DV |        10000 | 1.02714 |  0.999038 |  1.04962 |  1.01544 |  1.03139 | 0.999038 |  1.04962 |  1.02453 | 0.0188148 |      1 | 1001 | 100 |
+| i32CPU_DV |        10000 | 1.088   |  1.17937  |  1.17109 |  1.1531  |  1.18244 | 1.088    |  1.18244 |  1.1548  | 0.0390465 |      4 | 1001 | 100 |
+| f32CPU_SM |        10000 | 1.16123 |  1.14092  |  1.08636 |  1.17035 |  1.1552  | 1.08636  |  1.17035 |  1.14281 | 0.0333204 |      3 | 1001 | 100 |
+| i32CPU_SM |        10000 | 1.01817 |  1.06418  |  1.01925 |  1.07144 |  1.13448 | 1.01817  |  1.13448 |  1.0615  | 0.0476856 |      2 | 1001 | 100 |
+| f32CPU_DM |        10000 | 1.8242  |  1.77216  |  1.74569 |  1.715   |  1.77249 | 1.715    |  1.8242  |  1.76591 | 0.040254  |      5 | 1001 | 100 |
+| i32CPU_DM |        10000 | 1.91169 |  1.86213  |  1.79263 |  1.82148 |  1.81984 | 1.79263  |  1.91169 |  1.84156 | 0.0463954 |      6 | 1001 | 100 |
+| f32GPU_DV |        10000 | 4.03647 |  4.09389  |  4.05512 |  4.07632 |  4.05695 | 4.03647  |  4.09389 |  4.06375 | 0.0219723 |      9 | 1001 | 100 |
+| f32GPU_DM |        10000 | 3.62518 |  3.74288  |  3.75778 |  3.71924 |  3.73217 | 3.62518  |  3.75778 |  3.71545 | 0.0524091 |      7 | 1001 | 100 |
+| f32GPU_SM |        10000 | 9.95502 | 10.0398   | 10.1103  | 10.1644  | 10.0673  | 9.95502  | 10.1644  | 10.0674  | 0.0784879 |     11 | 1001 | 100 |
+
+</details>
