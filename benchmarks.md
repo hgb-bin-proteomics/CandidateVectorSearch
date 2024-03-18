@@ -40,7 +40,7 @@ runtimes:
 **Figure 1:** Caption.
 
 
-<details><summar>Expand for raw data!</summary>
+<details><summary>Expand for raw data!</summary>
 
 | Method    |   Candidates |   Run 1 |     Run 2 |    Run 3 |    Run 4 |    Run 5 |      Min |      Max |     Mean |        SD |   Rank |    Y |   N |
 |:----------|-------------:|--------:|----------:|---------:|---------:|---------:|---------:|---------:|---------:|----------:|-------:|-----:|----:|
