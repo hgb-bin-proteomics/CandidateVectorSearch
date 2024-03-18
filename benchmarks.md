@@ -41,7 +41,6 @@ runtimes:
 [Eigen](https://eigen.tuxfamily.org/) yields the fastest computation time of
 only 1.02 seconds.
 
-
 <details><summary>Expand for raw data!</summary>
 
 | Method    |   Candidates |   Run 1 |     Run 2 |    Run 3 |    Run 4 |    Run 5 |      Min |      Max |     Mean |        SD |   Rank |    Y |   N |
@@ -68,12 +67,11 @@ Using a database of 100 000 peptide candidates the methods yield the following
 runtimes:
 
 ![benchmark_pc_100000](Benchmarks/benchmark_pc_100000.svg)
-**Figure 1:** Float32-based sparse matrix * sparse matrix search using
+**Figure 2:** Float32-based sparse matrix * sparse matrix search using
 [Eigen](https://eigen.tuxfamily.org/) yields the fastest computation time of
 only 5.08 seconds. Note that `f32GPU_SM` has been excluded from the plot since
 computation times exceeded all other methods by more than 10-fold. The raw data
 is available below.
-
 
 <details><summary>Expand for raw data!</summary>
 
@@ -90,5 +88,35 @@ is available below.
 | f32GPU_DV |       100000 |  19.6112  |  20.1476  |  19.9083  |  19.1877  |  18.8013  |  18.8013  |  20.1476  |  19.5312  |  0.542965 |      7 | 1001 | 100 |
 | f32GPU_DM |       100000 |  26.7439  |  26.9163  |  26.7714  |  26.4168  |  26.3571  |  26.3571  |  26.9163  |  26.6411  |  0.241999 |      8 | 1001 | 100 |
 | f32GPU_SM |       100000 | 880.093   | 919.047   | 807.312   | 792.249   | 774.371   | 774.371   | 919.047   | 834.615   | 61.9812   |     11 | 1001 | 100 |
+
+</details>
+
+### 1 000 000 Candidates
+
+`A * B = C where A[1000000, 500000] and B[500000, 1001]`
+
+Using a database of 1 000 000 peptide candidates the methods yield the following
+runtimes:
+
+![benchmark_pc_1000000](Benchmarks/benchmark_pc_1000000.svg)
+**Figure 3:** Int32-based sparse matrix * sparse matrix search using
+[Eigen](https://eigen.tuxfamily.org/) yields the fastest computation time of
+only 45.04 seconds. Note that `f32GPU_SM` has been excluded from the plot since
+the method ran out of memory. The raw data is available below.
+
+<details><summary>Expand for raw data!</summary>
+
+| Method    |   Candidates |    Run 1 |    Run 2 |    Run 3 |    Run 4 |    Run 5 |      Min |      Max |     Mean |       SD |   Rank |    Y |   N |
+|:----------|-------------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|-------:|-----:|----:|
+| f32CPU_SV |      1000000 | 292.024  | 305.725  | 275.855  | 283.298  | 308.572  | 275.855  | 308.572  | 293.095  | 14.0837  |      9 | 1001 | 100 |
+| i32CPU_SV |      1000000 | 337.896  | 330.922  | 293.953  | 328.767  | 351.387  | 293.953  | 351.387  | 328.585  | 21.2805  |     10 | 1001 | 100 |
+| f32CPU_DV |      1000000 |  87.1387 |  78.9427 |  73.9562 |  82.5062 |  88.0868 |  73.9562 |  88.0868 |  82.1261 |  5.8669  |      4 | 1001 | 100 |
+| i32CPU_DV |      1000000 |  88.2644 |  76.9449 |  70.4682 |  81.2829 |  92.4659 |  70.4682 |  92.4659 |  81.8853 |  8.77158 |      3 | 1001 | 100 |
+| f32CPU_SM |      1000000 |  59.1796 |  42.2678 |  38.3327 |  43.238  |  61.2774 |  38.3327 |  61.2774 |  48.8591 | 10.5662  |      2 | 1001 | 100 |
+| i32CPU_SM |      1000000 |  41.7158 |  45.5913 |  38.0705 |  43.2118 |  56.596  |  38.0705 |  56.596  |  45.0371 |  7.0145  |      1 | 1001 | 100 |
+| f32CPU_DM |      1000000 | 105.11   | 106.617  |  95.4387 | 105.418  | 114.833  |  95.4387 | 114.833  | 105.483  |  6.88718 |      5 | 1001 | 100 |
+| i32CPU_DM |      1000000 | 113.402  | 105.918  |  96.2186 | 109.205  | 113.995  |  96.2186 | 113.995  | 107.748  |  7.23534 |      6 | 1001 | 100 |
+| f32GPU_DV |      1000000 | 166.4    | 165.727  | 165.672  | 167.374  | 169.121  | 165.672  | 169.121  | 166.859  |  1.4387  |      7 | 1001 | 100 |
+| f32GPU_DM |      1000000 | 301.266  | 299.136  | 254.768  | 257.244  | 256.796  | 254.768  | 301.266  | 273.842  | 24.0922  |      8 | 1001 | 100 |
 
 </details>
