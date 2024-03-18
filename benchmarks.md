@@ -16,7 +16,8 @@ comprehensive overview of computation times.
 
 For all benchmarks we search 1001 spectra (this is specifically selected to see
 if batched multiplication has influence on performance) and return the top 100
-candidates.
+candidates. All benchmarks were conducted during light background usage (e.g.
+open browser, text editor, etc.).
 
 ## System 1 - Standard Office PC
 
@@ -25,7 +26,7 @@ following hardware:
 - Model: Dell Precision 3560
 - CPU: Intel Core i7-1185G7 [4 cores @ 1.8 GHz base/ 3.0 GHz boost]
 - RAM: 16 GB DDR4 RAM [3200 MT/s, NA CAS]
-- GPU: Nvidia T500 [2GB VRAM]
+- GPU: Nvidia T500 [2 GB VRAM]
 - SSD/HDD: 512 GB NVMe SSD
 - OS: Windows 10 Education 64-bit (10.0, Build 19045)
 
@@ -120,3 +121,23 @@ the method ran out of memory. The raw data is available below.
 | f32GPU_DM |      1000000 | 301.266  | 299.136  | 254.768  | 257.244  | 256.796  | 254.768  | 301.266  | 273.842  | 24.0922  |      8 | 1001 | 100 |
 
 </details>
+
+## System 2 - High Performance PC
+
+The second system we tested this on was a more powerful desktop PC with the
+following (more recent) hardware:
+- MB: ASUS ROG Strix B650E-I
+- CPU: AMD Ryzen 7900X [12 cores @ 4.7 GHz base/ 5.6 GHz boost]
+- RAM: Kingston 64 GB DDR5 RAM [5600 MT/s, 36 CAS]
+- GPU: ASUS Dual [Nvidia] GeForce RTX 4060 Ti OC [16 GB VRAM]*
+- SSD/HDD: Corsair MP600 Pro NH 2 TB NVMe SSD [PCIe 4.0]
+- OS: Windows 11 Pro 64-bit (, Build)
+
+*_Note:_ `Dual` _is part of the name, this is a single graphics card!_
+
+### 10 000 Candidates
+
+`A * B = C where A[10000, 500000] and B[500000, 1001]`
+
+Using a database of 10 000 peptide candidates the methods yield the following
+runtimes:
