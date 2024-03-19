@@ -12,7 +12,8 @@ modeling.
 We ran benchmarks for different database sizes (different number of candidate
 peptides to be considered) to assess how that influences performance of the
 different methods. Furthermore, every benchmark is run five times to get a more
-comprehensive overview of computation times.
+comprehensive overview of computation times. The averages are plotted below,
+with error bars denoting standard deviation.
 
 For all benchmarks we search 1001 spectra (this is specifically selected to see
 if batched multiplication has influence on performance) and return the top 100
@@ -24,7 +25,7 @@ open browser, text editor, etc.).
 The first system we tested this on was a standard office laptop with the
 following hardware:
 - Model: Dell Precision 3560
-- CPU: Intel Core i7-1185G7 [4 cores @ 1.8 GHz base/ 3.0 GHz boost]
+- CPU: Intel Core i7-1185G7 [4 cores @ 1.8 GHz base / 3.0 GHz boost]
 - RAM: 16 GB DDR4 RAM [3200 MT/s, NA CAS]
 - GPU: Nvidia T500 [2 GB VRAM]
 - SSD/HDD: 512 GB NVMe SSD
@@ -122,12 +123,44 @@ the method ran out of memory. The raw data is available below.
 
 </details>
 
+### 5 000 000 Candidates
+
+`A * B = C where A[5000000, 500000] and B[500000, 1001]`
+
+Using a database of 5 000 000 peptide candidates the methods yield the following
+runtimes:
+
+![benchmark_pc_5000000](Benchmarks/benchmark_pc_5000000.svg)
+**Figure 5:** Float32-based sparse matrix * sparse matrix search using
+[Eigen](https://eigen.tuxfamily.org/) yields the fastest computation time of
+only 210.98 seconds. Note that all GPU-based methods have been excluded from the
+plot since their computation times exceeded that of CPU-based methods by more
+than 10-fold or because they ran out of memory. The raw data is available
+below.
+
+<details><summary>Expand for raw data!</summary>
+
+| Method    |   Candidates |     Run 1 |     Run 2 |     Run 3 |     Run 4 |     Run 5 |       Min |       Max |      Mean |       SD |   Rank |    Y |   N |
+|:----------|-------------:|----------:|----------:|----------:|----------:|----------:|----------:|----------:|----------:|---------:|-------:|-----:|----:|
+| f32CPU_SV |      5000000 |  1488.95  |  1753.58  |  1409.96  |  1405.52  |  1433.23  |  1405.52  |  1753.58  |  1498.25  | 146.545  |      7 | 1001 | 100 |
+| i32CPU_SV |      5000000 |  1456.77  |  2199.68  |  1443.93  |  1433.08  |  1640.18  |  1433.08  |  2199.68  |  1634.73  | 327.082  |      8 | 1001 | 100 |
+| f32CPU_DV |      5000000 |   362.758 |   434.276 |   371.356 |   371.242 |   396.402 |   362.758 |   434.276 |   387.207 |  29.1716 |      4 | 1001 | 100 |
+| i32CPU_DV |      5000000 |   360.054 |   429.113 |   362.396 |   354.354 |   383.947 |   354.354 |   429.113 |   377.973 |  30.7108 |      3 | 1001 | 100 |
+| f32CPU_SM |      5000000 |   202.057 |   253.796 |   195.927 |   197.155 |   205.942 |   195.927 |   253.796 |   210.975 |  24.2692 |      1 | 1001 | 100 |
+| i32CPU_SM |      5000000 |   196.972 |   247.733 |   238.983 |   217.433 |   192.904 |   192.904 |   247.733 |   218.805 |  24.4611 |      2 | 1001 | 100 |
+| f32CPU_DM |      5000000 |   495.787 |   543.992 |   501.467 |   506.691 |   542.057 |   495.787 |   543.992 |   517.999 |  23.1783 |      5 | 1001 | 100 |
+| i32CPU_DM |      5000000 |   494.032 |   519.314 |   542.015 |   496.312 |   542.956 |   494.032 |   542.956 |   518.926 |  23.6736 |      6 | 1001 | 100 |
+| f32GPU_DV |      5000000 | 13753.4   | 13738.6   | 13777.2   | 13396.6   | 14214     | 13396.6   | 14214     | 13775.9   | 290.558  |      9 | 1001 | 100 |
+| f32GPU_DM |      5000000 | 14965.1   | 15271.3   | 15013.6   | 14908.9   | 14943.8   | 14908.9   | 15271.3   | 15020.5   | 145.243  |     10 | 1001 | 100 |
+
+</details>
+
 ## System 2 - High Performance PC
 
 The second system we tested this on was a more powerful desktop PC with the
 following (more recent) hardware:
 - MB: ASUS ROG Strix B650E-I
-- CPU: AMD Ryzen 7900X [12 cores @ 4.7 GHz base/ 5.6 GHz boost]
+- CPU: AMD Ryzen 7900X [12 cores @ 4.7 GHz base / 5.6 GHz boost]
 - RAM: Kingston 64 GB DDR5 RAM [5600 MT/s, 36 CAS]
 - GPU: ASUS Dual [Nvidia] GeForce RTX 4060 Ti OC [16 GB VRAM]*
 - SSD/HDD: Corsair MP600 Pro NH 2 TB NVMe SSD [PCIe 4.0]
