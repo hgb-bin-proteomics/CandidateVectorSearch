@@ -123,6 +123,38 @@ the method ran out of memory. The raw data is available below.
 
 </details>
 
+### 2 500 000 Candidates
+
+`A * B = C where A[2500000, 500000] and B[500000, 1001]`
+
+Using a database of 2 500 000 peptide candidates the methods yield the following
+runtimes:
+
+![benchmark_pc_2500000](Benchmarks/benchmark_pc_2500000.svg)
+**Figure 4:** Float32-based sparse matrix * sparse matrix search using
+[Eigen](https://eigen.tuxfamily.org/) yields the fastest computation time of
+only 101.42 seconds. Note that `f32GPU_DM` has been excluded from the plot since
+the computation time exceeded that of other methods by more than 10-fold and
+`f32GPU_SM` has been excluded from the plot since the method ran out of memory.
+The raw data is available below.
+
+<details><summary>Expand for raw data!</summary>
+
+| Method    |   Candidates |    Run 1 |    Run 2 |     Run 3 |     Run 4 |    Run 5 |       Min |      Max |     Mean |        SD |   Rank |    Y |   N |
+|:----------|-------------:|---------:|---------:|----------:|----------:|---------:|----------:|---------:|---------:|----------:|-------:|-----:|----:|
+| f32CPU_SV |      2500000 |  692.117 |  829.181 |  695.621  |  706.285  | 1380.83  |  692.117  | 1380.83  |  860.808 | 296.247   |      9 | 1001 | 100 |
+| i32CPU_SV |      2500000 |  800.103 |  811.7   |  764.923  |  766.638  |  999.444 |  764.923  |  999.444 |  828.561 |  97.6981  |      8 | 1001 | 100 |
+| f32CPU_DV |      2500000 |  204.586 |  207.268 |  187.071  |  185.345  |  202.865 |  185.345  |  207.268 |  197.427 |  10.3792  |      3 | 1001 | 100 |
+| i32CPU_DV |      2500000 |  190.583 |  220.49  |  185.285  |  196.224  |  232.609 |  185.285  |  232.609 |  205.038 |  20.4678  |      4 | 1001 | 100 |
+| f32CPU_SM |      2500000 |  104.16  |  103.163 |   96.9828 |   96.1288 |  106.669 |   96.1288 |  106.669 |  101.421 |   4.63096 |      1 | 1001 | 100 |
+| i32CPU_SM |      2500000 |  106.88  |  159.144 |   93.4166 |   95.3154 |  101.387 |   93.4166 |  159.144 |  111.229 |  27.3045  |      2 | 1001 | 100 |
+| f32CPU_DM |      2500000 |  278.991 |  334.042 |  240.312  |  242.37   |  266.467 |  240.312  |  334.042 |  272.436 |  38.1112  |      5 | 1001 | 100 |
+| i32CPU_DM |      2500000 |  302.466 |  292.033 |  243.411  |  245.654  |  279.659 |  243.411  |  302.466 |  272.644 |  26.9143  |      6 | 1001 | 100 |
+| f32GPU_DV |      2500000 |  455.415 |  438.436 |  422.096  |  423.759  |  426.902 |  422.096  |  455.415 |  433.322 |  13.901   |      7 | 1001 | 100 |
+| f32GPU_DM |      2500000 | 8169.59  | 7931.93  | 7467.55   | 7840.16   | 7491.93  | 7467.55   | 8169.59  | 7780.23  | 299.621   |     10 | 1001 | 100 |
+
+</details>
+
 ### 5 000 000 Candidates
 
 `A * B = C where A[5000000, 500000] and B[500000, 1001]`
@@ -174,3 +206,5 @@ following (more recent) hardware:
 
 Using a database of 10 000 peptide candidates the methods yield the following
 runtimes:
+
+## Conclusions
