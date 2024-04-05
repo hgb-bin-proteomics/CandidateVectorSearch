@@ -3,14 +3,43 @@ using System.Runtime.InteropServices;
 
 namespace CandidateVectorSearch
 {
+    /// <summary>
+    /// Prototype implementation to test C++/C# marshalling and the different matrix multiplication approaches.
+    /// </summary>
     public partial class DataLoader
     {
+        /// <summary>
+        /// Fixed parameter determined by the CandidateVectorSearch DLLs.
+        /// </summary>
         const int MASS_RANGE = 5000;
+
+        /// <summary>
+        /// Fixed parameter determined by the CandidateVectorSearch DLLs.
+        /// </summary>
         const int MASS_MULTIPLIER = 100;
+
+        /// <summary>
+        /// Fixed parameter determined by the CandidateVectorSearch DLLs.
+        /// </summary>
         const int ENCODING_SIZE = MASS_RANGE * MASS_MULTIPLIER;
+        
+        /// <summary>
+        /// Whether or not to normalize scores (true to simulate worst-case scenario).
+        /// </summary>
         const bool NORMALIZE = true;
+
+        /// <summary>
+        /// Whether or not to model peaks as gaussian distributions (true to simulate worst-case scenario).
+        /// </summary>
         const bool USE_GAUSSIAN = true;
 
+        /// <summary>
+        /// Main function to be executed when calling the executable.\n
+        /// The routine to be called depends on the commandline arguments passed to the function.\n
+        /// The commandline call has to look like this:\n
+        /// DataLoader.exe [(string)Mode][(int)NrCandidates][(int)NrSpectra][(int)TopN][(int)BatchSize]
+        /// </summary>
+        /// <param name="args">Array of commandline arguments.</param>
         public static void Main(string[] args)
         {
             // parameter defaults

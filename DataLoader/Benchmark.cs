@@ -5,6 +5,15 @@ namespace CandidateVectorSearch
 {
     public partial class DataLoader
     {
+        /// <summary>
+        /// Function to run synthetic benchmarks of all the different matrix multiplication functions.
+        /// </summary>
+        /// <param name="nrCandidates">The number of candidates that should be simulated.</param>
+        /// <param name="nrSpectra">The number of spectra to be simulated.</param>
+        /// <param name="topN">The number of top hits returned for every spectrum.</param>
+        /// <param name="batchSize">The number of spectra processed at once for matrix * matrix approaches.</param>
+        /// <param name="r">A random number generator used for simulation.</param>
+        /// <returns>Returns 0 if the benchmarks finished successfully.</returns>
         public static int Benchmark(int nrCandidates, int nrSpectra, int topN, int batchSize, Random r)
         {
             // generate candidate vectors

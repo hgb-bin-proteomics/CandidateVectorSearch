@@ -5,6 +5,12 @@ namespace CandidateVectorSearch
 {
     public partial class DataLoader
     {
+        /// <summary>
+        /// [DEPRECATED]\n
+        /// Function for testing a simple matrix multiplication of a deterministic problem.\n
+        /// Will not work with the current CandidateVectorSearch DLLs.
+        /// </summary>
+        /// <returns>Returns 0 if the function finished successfully.</returns>
         public static int DeterministicCompare()
         {
             // EXAMPLE PROBLEM

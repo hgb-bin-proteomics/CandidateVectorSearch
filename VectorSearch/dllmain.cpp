@@ -118,6 +118,7 @@ float normpdf(float, float, float);
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
 int* findTopCandidates(int* candidatesValues, int* candidatesIdx, 
                        int* spectraValues, int* spectraIdx, 
                        int cVLength, int cILength, 
@@ -228,6 +229,8 @@ int* findTopCandidates(int* candidatesValues, int* candidatesIdx,
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
+/// <exception cref="std::invalid_argument">Thrown if tolerance is smaller than 0.01, smaller tolerances would cause an integer overflow.</exception>
 int* findTopCandidatesInt(int* candidatesValues, int* candidatesIdx,
                           int* spectraValues, int* spectraIdx,
                           int cVLength, int cILength,
@@ -342,6 +345,7 @@ int* findTopCandidatesInt(int* candidatesValues, int* candidatesIdx,
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
 int* findTopCandidates2(int* candidatesValues, int* candidatesIdx,
                         int* spectraValues, int* spectraIdx,
                         int cVLength, int cILength,
@@ -452,6 +456,8 @@ int* findTopCandidates2(int* candidatesValues, int* candidatesIdx,
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
+/// <exception cref="std::invalid_argument">Thrown if tolerance is smaller than 0.01, smaller tolerances would cause an integer overflow.</exception>
 int* findTopCandidates2Int(int* candidatesValues, int* candidatesIdx,
                            int* spectraValues, int* spectraIdx,
                            int cVLength, int cILength,
@@ -567,6 +573,7 @@ int* findTopCandidates2Int(int* candidatesValues, int* candidatesIdx,
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
 int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
                               int* spectraValues, int* spectraIdx,
                               int cVLength, int cILength,
@@ -706,6 +713,8 @@ int* findTopCandidatesBatched(int* candidatesValues, int* candidatesIdx,
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
+/// <exception cref="std::invalid_argument">Thrown if tolerance is smaller than 0.01, smaller tolerances would cause an integer overflow.</exception>
 int* findTopCandidatesBatchedInt(int* candidatesValues, int* candidatesIdx,
                                  int* spectraValues, int* spectraIdx,
                                  int cVLength, int cILength,
@@ -849,6 +858,7 @@ int* findTopCandidatesBatchedInt(int* candidatesValues, int* candidatesIdx,
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
 int* findTopCandidatesBatched2(int* candidatesValues, int* candidatesIdx,
                                int* spectraValues, int* spectraIdx,
                                int cVLength, int cILength,
@@ -977,6 +987,8 @@ int* findTopCandidatesBatched2(int* candidatesValues, int* candidatesIdx,
 /// <param name="cores">Number of cores (int) used by Eigen.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
+/// <exception cref="std::invalid_argument">Thrown if tolerance is smaller than 0.01, smaller tolerances would cause an integer overflow.</exception>
 int* findTopCandidatesBatched2Int(int* candidatesValues, int* candidatesIdx,
                                   int* spectraValues, int* spectraIdx,
                                   int cVLength, int cILength,
