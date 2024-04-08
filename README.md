@@ -48,8 +48,8 @@ See [benchmarks.md](benchmarks.md).
 ## Requirements
 
 - \[Optional\] Using GPU based approaches (e.g. anything implemented in `VectorSearchCUDA.dll`) requires a CUDA capable GPU and CUDA version == 12.2.0
-[download here](https://developer.nvidia.com/cuda-12-2-0-download-archive). Other CUDA versions may or may not produce the desired results
-[see this issue](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/issues/32).
+([download here](https://developer.nvidia.com/cuda-12-2-0-download-archive)). Other CUDA versions may or may not produce the desired results
+([see this issue](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/issues/32)).
 
 ## Downloads
 
