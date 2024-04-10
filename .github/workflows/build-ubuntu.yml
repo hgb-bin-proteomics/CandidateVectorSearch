@@ -33,6 +33,7 @@ jobs:
           dotnet-sdk-6.0 \
           dotnet-runtime-6.0 \
           unzip \
+          zip \
           gcc \
           g++
       - name: Copy and unzip eigen
