@@ -57,7 +57,7 @@ jobs:
           cd DataLoader/bin/
           zip -r Release.zip Release
       - name: Upload artifact
-      - uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: release-ubuntu-22.04-x64-cpu-only
           path: DataLoader/bin/Release.zip
