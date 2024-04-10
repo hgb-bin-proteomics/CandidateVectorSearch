@@ -25,7 +25,7 @@ required:
 
 To build the C# testing application the following steps need to be carried out:
 - Navigate to the `DataLoader` directory: `cd DataLoader`
-- Build the executable: `dotnet build DataLoader.csproj --runtime ubuntu.22.04-x64 --self-contained --configuration Release`
+- Build the executable: `dotnet publish DataLoader.csproj --runtime ubuntu.22.04-x64 --self-contained --configuration Release`
 
 ## Running the executable
 
