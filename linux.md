@@ -1,17 +1,21 @@
-# Compilation on Ubuntu 22.04 (and other Unix-based system)
+# Compilation on Ubuntu 22.04 (and other Linux-based system)
+
+This is a rough guide for compiling *CandidateVectorSearch* on Ubuntu, which should
+generally work on most Linux-based systems.
 
 ## Installing dependencies
 
 The following dependencies are required for compilation:
 - gcc / g++: `sudo apt-get install -y gcc g++`
-- dotnet-sdk-6.0: `sudo apt-get install -y dotnet-sdk-6.0`
-- dotnet-runtime-6.0: `sudo apt-get install -y dotnet-runtime-6.0`
+- dotnet \[[more info](https://learn.microsoft.com/en-us/dotnet/core/install/linux)\]:
+  - dotnet-sdk-6.0: `sudo apt-get install -y dotnet-sdk-6.0`
+  - dotnet-runtime-6.0: `sudo apt-get install -y dotnet-runtime-6.0`
 - Additional dependencies may be required, please check `Dockerfile` to see a
   full list!
 
-Alternatively, a docker image with all necessary build tools is also available
+Alternatively, a [Docker](https://docs.docker.com/engine/install/) image with all necessary build tools is also available
 via `Dockerfile`:
-- Build the dockerfile: `docker build . -f Dockerfile -t cvs`
+- Build the Dockerfile: `docker build . -f Dockerfile -t cvs`
 - Run the container: `docker run -it cvs`
 
 ## Building the matrix multiplication backend (C++)
@@ -26,6 +30,7 @@ required:
 To build the C# testing application the following steps need to be carried out:
 - Navigate to the `DataLoader` directory: `cd DataLoader`
 - Build the executable: `dotnet publish DataLoader.csproj --runtime ubuntu.22.04-x64 --self-contained --configuration Release`
+- \[Alternatively: `dotnet publish DataLoader.csproj --runtime linux-x64 --self-contained --configuration Release`\]
 
 ## Running the executable
 
