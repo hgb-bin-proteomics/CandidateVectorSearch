@@ -14,6 +14,10 @@ jobs:
           cp eigen-3.4.0.zip VectorSearch
           cd VectorSearch
           unzip eigen-3.4.0.zip
+      - name: Install dependencies for C++ compilation
+        run: |
+          brew install llvm
+          brew install libomp
       - name: Build VectorSearch.dll dynamic library
         run: |
           cd VectorSearch
