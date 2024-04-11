@@ -17,7 +17,8 @@ jobs:
       - name: Build VectorSearch.dll dynamic library
         run: |
           cd VectorSearch
-          g++-13 -shared -I eigen-3.4.0 -fPIC -fopenmp -O3 -o VectorSearch.dll dllmainUnix.cpp
+#          g++-13 -shared -I eigen-3.4.0 -fPIC -fopenmp -O3 -o VectorSearch.dll dllmainUnix.cpp
+          clang -shared -I eigen-3.4.0 -fPIC -fopenmp=libomp -O3 -o VectorSearch.dll dllmainUnix.cpp
           cp VectorSearch.dll ..
       - name: Install NET
         uses: actions/setup-dotnet@v4
