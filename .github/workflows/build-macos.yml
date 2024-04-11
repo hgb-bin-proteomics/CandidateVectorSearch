@@ -29,13 +29,12 @@ jobs:
           g++ -shared -I eigen-3.4.0 -fPIC -fopenmp -O3 -o VectorSearch.dll dllmainUnix.cpp
           cp VectorSearch.dll ..
       - name: Build DataLoader
-        steps:
-          - uses: actions/setup-dotnet@v4
-            with:
-              dotnet-version: '6'
-          - run: |
-              cd DataLoader
-              dotnet publish DataLoader.csproj --runtime osx-arm64 --self-contained --configuration Release
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6'
+        run: |
+          cd DataLoader
+          dotnet publish DataLoader.csproj --runtime osx-arm64 --self-contained --configuration Release
       - name: Copy VectorSearch.dll to Release
         run: |
           cp VectorSearch.dll DataLoader/bin/Release/net6.0/osx-arm64
