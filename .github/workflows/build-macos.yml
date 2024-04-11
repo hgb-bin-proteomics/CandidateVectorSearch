@@ -18,6 +18,9 @@ jobs:
         run: |
           brew install llvm
           brew install libomp
+          echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> /Users/runner/.bash_profile
+          export LDFLAGS="-L/opt/homebrew/opt/libomp/lib"
+          export CPPFLAGS="-I/opt/homebrew/opt/libomp/include"
       - name: Build VectorSearch.dll dynamic library
         run: |
           cd VectorSearch
