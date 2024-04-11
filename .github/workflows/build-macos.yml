@@ -16,6 +16,7 @@ jobs:
           unzip eigen-3.4.0.zip
       - name: Build VectorSearch.dll dynamic library
         run: |
+          brew reinstall -sv gcc
           cd VectorSearch
           g++-13 -Wl,ld_classic -shared -I eigen-3.4.0 -fPIC -fopenmp -O3 -o VectorSearch.dll dllmainUnix.cpp
           cp VectorSearch.dll ..
