@@ -1,0 +1,22 @@
+name: Test for Windows
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  Test-for-Windows:
+    runs-on: windows-2022
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6'
+      - name: Test
+        run: |
+          cd DataLoaderExecutable/windows_x64/uncompressed
+          ./DataLoader EigenSIntB 10000

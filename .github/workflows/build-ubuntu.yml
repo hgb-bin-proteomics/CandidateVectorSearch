@@ -1,0 +1,64 @@
+name: Build for Ubuntu 22.04
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Build-for-Ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y gnupg \
+          gnupg1 \
+          gnupg2 \
+          software-properties-common \
+          curl \
+          git \
+          libglib2.0-0 \
+          libsm6 \
+          libxrender1 \
+          libxext6 \
+          libc6 \
+          libgcc-s1 \
+          libgssapi-krb5-2 \
+          libicu70 \
+          liblttng-ust1 \
+          libssl3 \
+          libstdc++6 \
+          libunwind8 \
+          zlib1g \
+          dotnet-sdk-6.0 \
+          dotnet-runtime-6.0 \
+          unzip \
+          zip \
+          gcc \
+          g++
+      - name: Copy and unzip eigen
+        run: |
+          cp eigen-3.4.0.zip VectorSearch
+          cd VectorSearch
+          unzip eigen-3.4.0.zip
+      - name: Build VectorSearch.dll dynamic library
+        run: |
+          cd VectorSearch
+          g++ -shared -I eigen-3.4.0 -fPIC -fopenmp -O3 -o VectorSearch.dll dllmainUnix.cpp
+          cp VectorSearch.dll ..
+      - name: Build DataLoader
+        run: |
+          cd DataLoader
+          dotnet publish DataLoader.csproj --runtime ubuntu.22.04-x64 --self-contained --configuration Release
+      - name: Copy VectorSearch.dll to Release
+        run: |
+          cp VectorSearch.dll DataLoader/bin/Release/net6.0/ubuntu.22.04-x64
+      - name: Zip Release
+        run: |
+          cd DataLoader/bin/
+          zip -r Release.zip Release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-ubuntu-22.04-x64-cpu-only
+          path: DataLoader/bin/Release.zip
