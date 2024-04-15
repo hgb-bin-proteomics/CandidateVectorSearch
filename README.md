@@ -53,10 +53,16 @@ See [benchmarks.md](benchmarks.md).
 
 ## Downloads
 
-Compiled DLLs for Windows 10/11 (x86, 64-bit) are available in the `dll` folder or in
+Compiled DLLs are available in the `dll` folder or in
 [Releases](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/releases).
 
-For other operating systems/architectures please compile the source code yourself!
+We supply compiled executables and DLLs for:
+- Windows 10/11 (x86, 64-bit)
+- Ubuntu 22.04 (x86, 64-bit)
+- macOS 14.4 (arm, 64-bit)
+
+For other operating systems/architectures please compile the source code yourself! Exemplary compilation instructions for linux and macOS can
+be found here: [linux.md](linux.md) and [macos.md](macos.md).
 
 ## Limitations
 
