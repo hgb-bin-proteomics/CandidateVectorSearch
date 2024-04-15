@@ -21,7 +21,7 @@ jobs:
           libgcc-s1 \
           libgssapi-krb5-2 \
           libicu72 \
-          libssl1.1 \
+          libssl3 \
           libstdc++6 \
           zlib1g
       - name: Install NET
