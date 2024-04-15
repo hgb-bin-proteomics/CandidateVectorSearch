@@ -13,14 +13,15 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl g++
       - name: Install NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6'
-      - name: Install dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y g++
       - name: Test
         run: |
           cd DataLoaderExecutable/linux_x64/uncompressed
+          chmod +x DataLoader
           ./DataLoader EigenSIntB 10000
