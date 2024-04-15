@@ -1,5 +1,8 @@
 # Compilation on macOS (macOS 14 on M-Series Macs)
 
+This is a rough guide for compiling *CandidateVectorSearch* on macOS 14.4, which should
+generally work on most macOS versions running on arm64-based Apple systems.
+
 ## Installing dependencies
 
 The following dependencies are required for compilation:
