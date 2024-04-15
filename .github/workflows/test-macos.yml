@@ -1,4 +1,4 @@
-name: Build for macOS
+name: Test for macOS
 
 on:
   push:
@@ -19,4 +19,5 @@ jobs:
       - name: Test
         run: |
           cd DataLoaderExecutable/macos_arm/uncompressed
+          chmod +x DataLoader
           ./DataLoader EigenSIntB 10000
