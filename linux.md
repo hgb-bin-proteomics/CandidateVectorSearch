@@ -1,4 +1,4 @@
-# Compilation on Ubuntu 22.04 (and other Linux-based system)
+# Compilation on Ubuntu 22.04 (and other Linux-based systems)
 
 This is a rough guide for compiling *CandidateVectorSearch* on Ubuntu, which should
 generally work on most Linux-based systems.

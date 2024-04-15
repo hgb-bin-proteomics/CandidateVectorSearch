@@ -5,19 +5,10 @@ on:
 
 jobs:
   Build-for-macOS:
-    runs-on: macos-12
+    runs-on: macos-14
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Install XCode
-        run: |
-          xcode-select --install
-      - name: Install Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      - name: Install gcc
-        run: |
-          brew install gcc
       - name: Copy and unzip eigen
         run: |
           cp eigen-3.4.0.zip VectorSearch
@@ -26,7 +17,7 @@ jobs:
       - name: Build VectorSearch.dll dynamic library
         run: |
           cd VectorSearch
-          g++ -shared -I eigen-3.4.0 -fPIC -fopenmp -O3 -o VectorSearch.dll dllmainUnix.cpp
+          g++-13 -Wl,-ld_classic -shared -I eigen-3.4.0 -fPIC -fopenmp -O3 -o VectorSearch.dll dllmainUnix.cpp
           cp VectorSearch.dll ..
       - name: Install NET
         uses: actions/setup-dotnet@v4
