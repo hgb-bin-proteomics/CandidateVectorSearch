@@ -15,7 +15,15 @@ jobs:
         uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          apt-get update && apt-get install -y curl g++
+          apt-get update && apt-get install -y curl \
+          g++ \
+          libc6 \
+          libgcc-s1 \
+          libgssapi-krb5-2 \
+          libicu72 \
+          libssl1.1 \
+          libstdc++6 \
+          zlib1g
       - name: Install NET
         uses: actions/setup-dotnet@v4
         with:
