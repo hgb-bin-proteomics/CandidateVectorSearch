@@ -1,0 +1,25 @@
+name: Test for Ubuntu 22.04
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  Test-for-Ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y g++
+      - name: Test
+        run: |
+          cd DataLoaderExecutable/ubuntu22.04_x64/uncompressed
+          ./DataLoader EigenSIntB 10000
