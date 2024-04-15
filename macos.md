@@ -30,7 +30,7 @@ To build the C# testing application the following steps need to be carried out:
 
 # Running the executable without building / compiling yourself
 
-We provide compiled binaries in `DataLoaderExecutable/macos-arm` and in the
+We provide compiled binaries in `DataLoaderExecutable/macos_arm` and in the
 `Releases` tab. Please again note that we only supply the compiled binaries for
 CPU-based search. Running the compiled binaries requires [.NET 6.0](https://learn.microsoft.com/en-us/dotnet/core/install/macos)
 and [g++](#Installing-dependencies).
