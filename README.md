@@ -1,3 +1,8 @@
+![test_state_windows](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/workflows/Test%20for%20Windows/badge.svg)
+![test_state_ubuntu](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/workflows/Test%20for%20Ubuntu%2022.04/badge.svg)
+![test_state_linux](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/workflows/Test%20for%20generic%20Linux/badge.svg)
+![test_state_macos](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/workflows/Test%20for%20macOS/badge.svg)
+
 # CandidateVectorSearch
 
 Searching for peptide candidates using sparse matrix + [sparse] vector/matrix multiplication. This is the computational backend for
