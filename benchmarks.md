@@ -342,4 +342,35 @@ below.
 
 </details>
 
+### 5 000 000 Candidates
+
+`A * B = C where A[5000000, 500000] and B[500000, 1001]`
+
+Using a database of 5 000 000 peptide candidates the methods yield the following
+runtimes:
+
+![benchmark_hpc_5000000](Benchmarks/benchmark_hpc_5000000.svg)
+**Figure 10:** Float32-based sparse matrix * dense vector search using
+[cuSPARSE](https://docs.nvidia.com/cuda/cusparse/) yields the fastest
+computation time of only 68.27 seconds. Note that GPU-based sparse matrix *
+sparse matrix search was not measured due to its extremely long computation time
+already evident from the 100 000 candidate benchmark. The raw data is available
+below.
+
+<details><summary>Expand for raw data!</summary>
+
+| Method    |   Candidates |    Run 1 |    Run 2 |    Run 3 |    Run 4 |    Run 5 |      Min |      Max |     Mean |        SD |   Rank |    Y |   N |
+|:----------|-------------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|----------:|-------:|-----:|----:|
+| f32CPU_SV |      5000000 | 826.765  | 849.757  | 821.71   | 820.768  | 821.078  | 820.768  | 849.757  | 828.015  | 12.3965   |      9 | 1001 | 100 |
+| i32CPU_SV |      5000000 | 939.623  | 947.093  | 952.345  | 941.501  | 954.725  | 939.623  | 954.725  | 947.057  |  6.57454  |     10 | 1001 | 100 |
+| f32CPU_DV |      5000000 | 130.432  | 125.811  | 126.793  | 126.478  | 125.721  | 125.721  | 130.432  | 127.047  |  1.94481  |      6 | 1001 | 100 |
+| i32CPU_DV |      5000000 | 117.315  | 117.658  | 118.168  | 118.61   | 117.866  | 117.315  | 118.61   | 117.923  |  0.493645 |      5 | 1001 | 100 |
+| f32CPU_SM |      5000000 | 124.313  | 104.291  | 104.264  | 101.747  | 102.933  | 101.747  | 124.313  | 107.51   |  9.45234  |      4 | 1001 | 100 |
+| i32CPU_SM |      5000000 |  90.7281 |  95.7376 |  95.3606 |  92.9142 |  94.5655 |  90.7281 |  95.7376 |  93.8612 |  2.06021  |      3 | 1001 | 100 |
+| f32CPU_DM |      5000000 | 127.834  | 133.133  | 134.49   | 131.903  | 132.968  | 127.834  | 134.49   | 132.066  |  2.53797  |      8 | 1001 | 100 |
+| i32CPU_DM |      5000000 | 128.806  | 133.237  | 131.651  | 133.81   | 132.751  | 128.806  | 133.81   | 132.051  |  1.97979  |      7 | 1001 | 100 |
+| f32GPU_DV |      5000000 |  67.4017 |  68.5841 |  68.0146 |  68.9836 |  68.3605 |  67.4017 |  68.9836 |  68.2689 |  0.599003 |      1 | 1001 | 100 |
+| f32GPU_DM |      5000000 |  71.757  |  73.6774 |  73.7368 |  74.6015 |  73.9481 |  71.757  |  74.6015 |  73.5442 |  1.0642   |      2 | 1001 | 100 |
+
+</details>
 ## Conclusions
