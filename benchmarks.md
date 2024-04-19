@@ -196,7 +196,7 @@ following (more recent) hardware:
 - RAM: Kingston 64 GB DDR5 RAM [5600 MT/s, 36 CAS]
 - GPU: ASUS Dual [Nvidia] GeForce RTX 4060 Ti OC [16 GB VRAM]*
 - SSD/HDD: Corsair MP600 Pro NH 2 TB NVMe SSD [PCIe 4.0]
-- OS: Windows 11 Pro 64-bit (, Build)
+- OS: Windows 11 Pro 64-bit (10.0, Build 22631)
 
 *_Note:_ `Dual` _is part of the name, this is a single graphics card!_
 
