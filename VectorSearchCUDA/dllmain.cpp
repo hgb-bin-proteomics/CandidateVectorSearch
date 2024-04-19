@@ -102,6 +102,7 @@ int checkCusparse(cusparseStatus_t status, int line)
 /// <param name="gaussianTol">If spectrum peaks should be modelled as normal distributions or not (bool).</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
 int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx, 
                            int* spectraValues, int* spectraIdx,
                            int csrRowoffsetsLength, int csrNNZ,
@@ -261,6 +262,7 @@ int* findTopCandidatesCuda(int* csrRowoffsets, int* csrColIdx,
 /// <param name="batchSize">How many spectra (int) should be searched at once.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
 int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
                                   int* spectraValues, int* spectraIdx,
                                   int csrRowoffsetsLength, int csrNNZ,
@@ -536,6 +538,7 @@ int* findTopCandidatesCudaBatched(int* csrRowoffsets, int* csrColIdx,
 /// <param name="batchSize">How many spectra (int) should be searched at once.</param>
 /// <param name="verbose">Print info every (int) processed spectra.</param>
 /// <returns>An integer array of length sILength * n containing the indexes of the top n candidates for each spectrum.</returns>
+/// <exception cref="std::invalid_argument">Thrown if n is greater than cILength, cannot return more hits than number of candidates.</exception>
 int* findTopCandidatesCudaBatched2(int* csrRowoffsets, int* csrColIdx,
                                    int* spectraValues, int* spectraIdx,
                                    int csrRowoffsetsLength, int csrNNZ,
@@ -760,6 +763,7 @@ float normpdf(float x, float mu, float sigma) {
 /// <param name="csrRowoffsetsLength">Length (int) of the csr_row_offsets array.</param>
 /// <param name="colIdxPos">The position (int) of the element in question of the csr_column_indices array.</param>
 /// <returns>Associated row index (int) or throws an error if the row index could not be found.</returns>
+/// <exception cref="std::logic_error">Thrown if the row index could not be found.</exception>
 int getRowIdx(int* csrRowoffsets, int csrRowoffsetsLength, int colIdxPos) {
     for (int i = 0; i < csrRowoffsetsLength - 1; ++i) {
         if (csrRowoffsets[i + 1] > colIdxPos) {

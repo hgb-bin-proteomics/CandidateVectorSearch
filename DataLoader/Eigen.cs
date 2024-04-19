@@ -85,6 +85,18 @@ namespace CandidateVectorSearch
         [DllImport(dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern int releaseMemory(IntPtr result);
 
+        /// <summary>
+        /// Wrapper for testing CPU-based matrix multiplication functions.
+        /// </summary>
+        /// <param name="nrCandidates">The number of candidates that should be simulated.</param>
+        /// <param name="nrSpectra">The number of spectra to be simulated.</param>
+        /// <param name="topN">The number of top hits returned for every spectrum.</param>
+        /// <param name="batchSize">The number of spectra processed at once for matrix * matrix approaches.</param>
+        /// <param name="r">A random number generator used for simulation.</param>
+        /// <param name="batched">Whether to run a vector * matrix (false) or matrix * matrix (true) approach.</param>
+        /// <param name="sparse">Whether to run a sparse * dense (false) or sparse * sparse (true) approach.</param>
+        /// <param name="useInt">Whether or not to convert floating point numbers to integers before multiplication.</param>
+        /// <returns>Returns 0 if the function finished successfully.</returns>
         public static int Eigen(int nrCandidates, int nrSpectra, int topN, int batchSize, Random r, bool batched, bool sparse, bool useInt = false)
         {
             // generate candidate vectors

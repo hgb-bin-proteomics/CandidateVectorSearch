@@ -7,7 +7,8 @@
 
 Searching for peptide candidates using sparse matrix + [sparse] vector/matrix multiplication. This is the computational backend for
 [CandidateSearch](https://github.com/hgb-bin-proteomics/CandidateSearch) - a search engine that aims to (quickly) identify peptide candidates for
-a given mass spectrum without any information about precursor mass or variable modifications.
+a given mass spectrum without any information about precursor mass or variable modifications. This is also the computational backend for the
+non-cleavable crosslink search in [MS Annika](https://github.com/hgb-bin-proteomics/MSAnnika).
 
 Implements the following methods across two DLLs:
 - [VectorSearch.dll](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/blob/master/VectorSearch/dllmain.cpp):
@@ -49,18 +50,31 @@ Documentation is also available on
 
 See [benchmarks.md](benchmarks.md).
 
+## Requirements
+
+- \[Optional\] Using GPU based approaches (e.g. anything implemented in `VectorSearchCUDA.dll`) requires a CUDA capable GPU and CUDA version == 12.2.0
+([download here](https://developer.nvidia.com/cuda-12-2-0-download-archive)). Other CUDA versions may or may not produce the desired results
+([see this issue](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/issues/32)).
+
 ## Downloads
 
-Compiled DLLs for Windows (10+, x64) are available in the `dll` folder or in
+Compiled DLLs are available in the `dll` folder or in
 [Releases](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/releases).
 
-For other operating systems/architectures please compile the source code yourself!
+We supply compiled executables and DLLs for:
+- Windows 10/11 (x86, 64-bit)
+- Ubuntu 22.04 (x86, 64-bit)
+- macOS 14.4 (arm, 64-bit)
+
+For other operating systems/architectures please compile the source code yourself! Exemplary compilation instructions for linux and macOS can
+be found here: [linux.md](linux.md) and [macos.md](macos.md).
 
 ## Limitations
 
 Please be aware of the following limitations:
 - Ions/peaks up to 5000 m/z are supported, beyond that they are discarded.
 - The encoding precision is 0.01 (m/z, Dalton).
+- Only matrices up to 2 * 10<sup>9</sup> non-zero elements are supported \[see [this issue](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/issues/42)\].
 - \[Eigen\]\[Sparse\] Sparse candidate matrices support up to 100 elements per row, beyond that matrix creation might be slow due to resizing.
   - This means every peptide candidate can be encoded up to 100 ions.
 - \[Eigen\]\[Sparse\] Sparse spectrum matrices support up to 1000 elements per row, beyond that matrix creation might be slow due to resizing.
@@ -69,6 +83,11 @@ Please be aware of the following limitations:
 - \[Eigen\]\[i32\] The rounding precision of converting floats to integers is 0.001, the exact rounding for a float `val` is `(int) round(val * 1000.0f)`.
 - \[Eigen\]\[i32\] Integer based methods do not allow tolerances below 0.01 because they might cause overflows.
 - \[CUDA\] Sparse matrix - sparse matrix multiplication tends to be very slow and very memory hungry, most likely caused by memory overhead and the output matrix not being sparse.
+
+## Implementing your own matrix products
+
+If you want to implement your own (and hopefully faster) computation for matrix products, we offer a template repository that walks you through that:
+[CandidateVectorSearch_template](https://github.com/hgb-bin-proteomics/CandidateVectorSearch_template/)
 
 ## Acknowledgements
 
