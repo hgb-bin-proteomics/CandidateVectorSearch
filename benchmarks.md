@@ -399,3 +399,17 @@ types instead). See also
 [this issue](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/issues/42).
 
 ## Conclusions
+
+CPU-based sparse matrix * sparse matrix search is generally a good choice, no
+matter the system configuration. Choosing an Int32- or Float32-based approach
+usually does not make a considerable difference, we recommend going with the
+Int32 variant as it ensures better reproducibility of results, eliminating any
+kind of deviations due to floating point shenanigans. If a decent GPU (e.g.
+anything comparable to an Nvidia GeForce RTX 4060 Ti 16 GB or better) is
+available, running a GPU-based search is the more performant choice. We
+recommend going with the sparse matrix * dense vector approach as it requires
+less GPU memory. The GPU-based sparse matrix * sparse matrix search appears to
+be the worst of the tested methods, yielding very long computation times and
+exceedingly high memory usage. This is most likely due to the fact that the
+algorithm assumes that the resulting matrix is also sparse, which almost never
+will be the case.
