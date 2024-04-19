@@ -69,6 +69,7 @@ be found here: [linux.md](linux.md) and [macos.md](macos.md).
 Please be aware of the following limitations:
 - Ions/peaks up to 5000 m/z are supported, beyond that they are discarded.
 - The encoding precision is 0.01 (m/z, Dalton).
+- Only matrices up to 2 * 10<sup>9</sup> non-zero elements are supported \[see [this issue](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/issues/42)\].
 - \[Eigen\]\[Sparse\] Sparse candidate matrices support up to 100 elements per row, beyond that matrix creation might be slow due to resizing.
   - This means every peptide candidate can be encoded up to 100 ions.
 - \[Eigen\]\[Sparse\] Sparse spectrum matrices support up to 1000 elements per row, beyond that matrix creation might be slow due to resizing.
