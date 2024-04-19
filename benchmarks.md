@@ -373,4 +373,29 @@ below.
 | f32GPU_DM |      5000000 |  71.757  |  73.6774 |  73.7368 |  74.6015 |  73.9481 |  71.757  |  74.6015 |  73.5442 |  1.0642   |      2 | 1001 | 100 |
 
 </details>
+
+### Beyond 5 000 000 Candidates
+
+Here are some single benchmarks of the best performing CPU-based search
+`i32CPU_SM` and the best best performing GPU-based search `f32GPU_DV`:
+
+| Method    | Candidates | Time (s)      |
+|:----------|-----------:|--------------:|
+| i32CPU_SM | 10 000 000 | 192.9012858   |
+| f32GPU_DV | 10 000 000 | 136.936034    |
+| i32CPU_SM | 15 000 000 | 294.8084179   |
+| f32GPU_DV | 15 000 000 | 222.3788737   |
+| i32CPU_SM | 2 000 0000 | 402.716955    |
+| f32GPU_DV | 20 000 000 | 281.232755    |
+| i32CPU_SM | 21 474 835 | 439.2972796   |
+| f32GPU_DV | 21 474 835 | failed        |
+
+You might notice that the maximum number of tested candidates is 21 474 835,
+this is because this results in 2 147 483 500 non-zero elements, close to the
+maximum of a signed int32 type value. Going beyond that is impossible with the
+provided implementation. In case you really need to go beyond that, please
+adapt the implementation accordingly (e.g. using unsigned int32 or int64 data
+types instead). See also
+[this issue](https://github.com/hgb-bin-proteomics/CandidateVectorSearch/issues/42).
+
 ## Conclusions
