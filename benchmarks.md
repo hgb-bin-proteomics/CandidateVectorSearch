@@ -385,7 +385,7 @@ Here are some single benchmarks of the best performing CPU-based search
 | f32GPU_DV | 10 000 000 | 136.936034    |
 | i32CPU_SM | 15 000 000 | 294.8084179   |
 | f32GPU_DV | 15 000 000 | 222.3788737   |
-| i32CPU_SM | 2 000 0000 | 402.716955    |
+| i32CPU_SM | 20 000 000 | 402.716955    |
 | f32GPU_DV | 20 000 000 | 281.232755    |
 | i32CPU_SM | 21 474 835 | 439.2972796   |
 | f32GPU_DV | 21 474 835 | failed        |
