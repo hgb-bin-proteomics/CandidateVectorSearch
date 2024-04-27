@@ -69,7 +69,7 @@ Again the values should be multiplied by 100 and rounded to the nearest integer.
 Peaks with m/z values greater than 5000 should be discarded!
 
 ```python
-spectraValues = [13574, 32133, 53179, 98999]
+spectraValues = [13574, 32133, 53179, 98999,
                  10189, 30142, 71380, 75434, 81198, 87144]
 ```
 
